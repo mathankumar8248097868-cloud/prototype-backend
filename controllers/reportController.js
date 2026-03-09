@@ -21,15 +21,13 @@ const fs = require("fs");
 const path = require("path");
 const db = require("../config/db");
 
+// Chart generator using QuickChart API
 async function generateChart(config) {
-  const url = "https://quickchart.io/chart";
-
   const response = await axios.post(
-    url,
+    "https://quickchart.io/chart",
     { chart: config },
     { responseType: "arraybuffer" }
   );
-
   return Buffer.from(response.data);
 }
 
@@ -80,7 +78,6 @@ exports.generateReport = async (req, res) => {
     children.push(heading(d.departmentName));
     children.push(heading(`Camp Report – ${d.campLocation}`));
     children.push(heading(`Date: ${d.reportDateShort}`));
-
     children.push(blank());
 
     children.push(
@@ -114,9 +111,7 @@ exports.generateReport = async (req, res) => {
 
       children.push(
         new Paragraph({
-          tabStops: [
-            { type: TabStopType.RIGHT, position: TabStopPosition.MAX },
-          ],
+          tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
           spacing: { line: 360 },
           children: [
             img1
@@ -125,7 +120,7 @@ exports.generateReport = async (req, res) => {
                   transformation: { width: 250, height: 170 },
                 })
               : new TextRun(""),
-            new TextRun({ text: "\t" }),
+            new TextRun("\t"),
             img2
               ? new ImageRun({
                   data: img2,
@@ -172,13 +167,11 @@ exports.generateReport = async (req, res) => {
       type: "bar",
       data: {
         labels: ["Male", "Female"],
-        datasets: [
-          {
-            label: "Patients",
-            data: [parseInt(d.maleCount), parseInt(d.femaleCount)],
-            backgroundColor: "lightblue",
-          },
-        ],
+        datasets: [{
+          label: "Patients",
+          data: [parseInt(d.maleCount), parseInt(d.femaleCount)],
+          backgroundColor: "lightblue",
+        }],
       },
     });
 
@@ -210,24 +203,46 @@ exports.generateReport = async (req, res) => {
 
     if (d.extraScreening) {
       const extra = JSON.parse(d.extraScreening);
-      extra.forEach((e) => screeningRows.push([e.name, e.value]));
+      extra.forEach((item) => screeningRows.push([item.name, item.value]));
     }
+
+    const screeningTable = new Table({
+      alignment: AlignmentType.CENTER,
+      width: { size: 70, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ children: [normalText("Diagnosis", true)] }),
+            new TableCell({ children: [normalText("No of Patients", true)] }),
+          ],
+        }),
+        ...screeningRows.map(row =>
+          new TableRow({
+            children: row.map(val =>
+              new TableCell({
+                children: [normalText(val, true)],
+              })
+            ),
+          })
+        ),
+      ],
+    });
 
     const screeningChart = await generateChart({
       type: "bar",
       data: {
-        labels: screeningRows.map((r) => r[0]),
-        datasets: [
-          {
-            label: "Patients",
-            data: screeningRows.map((r) => r[1]),
-            backgroundColor: "lightblue",
-          },
-        ],
+        labels: screeningRows.map(r => r[0]),
+        datasets: [{
+          label: "Patients",
+          data: screeningRows.map(r => r[1]),
+          backgroundColor: "lightblue",
+        }],
       },
     });
 
     children.push(heading("Screening Statistics"));
+    children.push(screeningTable);
+    children.push(blank());
 
     children.push(
       new Paragraph({
@@ -249,24 +264,46 @@ exports.generateReport = async (req, res) => {
 
     if (d.extraTreatment) {
       const extra = JSON.parse(d.extraTreatment);
-      extra.forEach((e) => treatmentRows.push([e.name, e.value]));
+      extra.forEach((item) => treatmentRows.push([item.name, item.value]));
     }
+
+    const treatmentTable = new Table({
+      alignment: AlignmentType.CENTER,
+      width: { size: 60, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ children: [normalText("Treatment", true)] }),
+            new TableCell({ children: [normalText("No of Patients", true)] }),
+          ],
+        }),
+        ...treatmentRows.map(row =>
+          new TableRow({
+            children: row.map(val =>
+              new TableCell({
+                children: [normalText(val, true)],
+              })
+            ),
+          })
+        ),
+      ],
+    });
 
     const treatmentChart = await generateChart({
       type: "bar",
       data: {
-        labels: treatmentRows.map((r) => r[0]),
-        datasets: [
-          {
-            label: "Patients",
-            data: treatmentRows.map((r) => r[1]),
-            backgroundColor: "lightblue",
-          },
-        ],
+        labels: treatmentRows.map(r => r[0]),
+        datasets: [{
+          label: "Patients",
+          data: treatmentRows.map(r => r[1]),
+          backgroundColor: "lightblue",
+        }],
       },
     });
 
     children.push(heading("Treatment Statistics"));
+    children.push(treatmentTable);
+    children.push(blank());
 
     children.push(
       new Paragraph({
@@ -313,8 +350,6 @@ exports.generateReport = async (req, res) => {
     const reportPath = path.join("/tmp/", filename);
 
     fs.writeFileSync(reportPath, buffer);
-
-    // SAVE REPORT
 
     db.query(
       "INSERT INTO reports(username,filename,created_date,created_time) VALUES(?,?,CURDATE(),CURTIME())",
