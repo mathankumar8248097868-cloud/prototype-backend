@@ -1,45 +1,46 @@
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-const multer = require("multer")
-const path = require("path")
+const multer = require("multer");
+const path = require("path");
 
-const reportController = require("../controllers/reportController")
+const reportController = require("../controllers/reportController");
 
 // ================= FILE STORAGE =================
 
 const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
 
-destination: function (req, file, cb) {
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
 
-cb(null, "uploads/")
-
-},
-
-filename: function (req, file, cb) {
-
-cb(null, Date.now() + path.extname(file.originalname))
-
-}
-
-})
-
-const upload = multer({ storage })
+const upload = multer({ storage });
 
 // ================= GENERATE REPORT =================
 
-router.post("/generate", upload.array("photos"), (req,res,next)=>{
+router.post(
+  "/generate",
+  upload.array("photos"),
+  (req, res, next) => {
 
-// check login
-if(!req.session.user){
-return res.status(401).json({success:false, message:"Not logged in"})
-}
+    // check login
+    if (!req.session.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Not logged in",
+      });
+    }
 
-// attach username to request
-req.username = req.session.user
+    // attach username to request
+    req.username = req.session.user;
 
-next()
+    next();
+  },
+  reportController.generateReport
+);
 
-}, reportController.generateReport)
-
-module.exports = router
+module.exports = router;
