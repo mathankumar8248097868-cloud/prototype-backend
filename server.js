@@ -16,16 +16,18 @@ credentials:true
 }))
 app.use(express.json())
 
+const session = require("express-session");
+
 app.use(session({
-secret:"secretkey",
-resave:false,
-saveUninitialized:false,
-cookie:{
-secure:true,
-sameSite:"none"
-}
-}))
-}))
+  secret: "secretkey",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24
+  }
+}));
 
 // ================= USER LOGIN =================
 
