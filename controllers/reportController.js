@@ -16,20 +16,17 @@ const {
   WidthType,
 } = require("docx");
 
-const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const db = require("../config/db");
 
-// Generate chart using QuickChart API
-async function generateChart(config) {
-  const response = await axios.post(
-    "https://quickchart.io/chart",
-    { chart: config },
-    { responseType: "arraybuffer" }
-  );
-  return Buffer.from(response.data);
-}
+const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
+require("chart.js/auto");
+
+const chartCanvas = new ChartJSNodeCanvas({
+  width: 800,
+  height: 500,
+});
 
 exports.generateReport = async (req, res) => {
   try {
@@ -58,7 +55,7 @@ exports.generateReport = async (req, res) => {
         spacing: { line: 480 },
         children: [
           new TextRun({
-            text: String(text),
+            text: String(text || ""),
             font: "Times New Roman",
             size: 24,
           }),
@@ -161,21 +158,22 @@ exports.generateReport = async (req, res) => {
       ],
     });
 
-    const campChart = await generateChart({
+    const campChart = await chartCanvas.renderToBuffer({
       type: "bar",
       data: {
         labels: ["Male", "Female"],
-        datasets: [{
-          label: "Patients",
-          data: [parseInt(d.maleCount), parseInt(d.femaleCount)],
-          backgroundColor: "lightblue",
-        }],
+        datasets: [
+          {
+            data: [parseInt(d.maleCount), parseInt(d.femaleCount)],
+            backgroundColor: "lightblue",
+          },
+        ],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
           x: { title: { display: true, text: "Gender" } },
-          y: { title: { display: true, text: "Number of Patients" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
@@ -211,50 +209,27 @@ exports.generateReport = async (req, res) => {
       extra.forEach((item) => screeningRows.push([item.name, item.value]));
     }
 
-    const screeningTable = new Table({
-      alignment: AlignmentType.CENTER,
-      width: { size: 70, type: WidthType.PERCENTAGE },
-      rows: [
-        new TableRow({
-          children: [
-            new TableCell({ children: [normalText("Diagnosis", true)] }),
-            new TableCell({ children: [normalText("No of Patients", true)] }),
-          ],
-        }),
-        ...screeningRows.map((row) =>
-          new TableRow({
-            children: row.map((val) =>
-              new TableCell({
-                children: [normalText(val, true)],
-              })
-            ),
-          })
-        ),
-      ],
-    });
-
-    const screeningChart = await generateChart({
+    const screeningChart = await chartCanvas.renderToBuffer({
       type: "bar",
       data: {
         labels: screeningRows.map((r) => r[0]),
-        datasets: [{
-          label: "Patients",
-          data: screeningRows.map((r) => r[1]),
-          backgroundColor: "lightblue",
-        }],
+        datasets: [
+          {
+            data: screeningRows.map((r) => r[1]),
+            backgroundColor: "lightblue",
+          },
+        ],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
           x: { title: { display: true, text: "Diagnosis" } },
-          y: { title: { display: true, text: "Number of Patients" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
 
     children.push(heading("Screening Statistics"));
-    children.push(screeningTable);
-    children.push(blank());
 
     children.push(
       new Paragraph({
@@ -279,50 +254,27 @@ exports.generateReport = async (req, res) => {
       extra.forEach((item) => treatmentRows.push([item.name, item.value]));
     }
 
-    const treatmentTable = new Table({
-      alignment: AlignmentType.CENTER,
-      width: { size: 60, type: WidthType.PERCENTAGE },
-      rows: [
-        new TableRow({
-          children: [
-            new TableCell({ children: [normalText("Treatment", true)] }),
-            new TableCell({ children: [normalText("No of Patients", true)] }),
-          ],
-        }),
-        ...treatmentRows.map((row) =>
-          new TableRow({
-            children: row.map((val) =>
-              new TableCell({
-                children: [normalText(val, true)],
-              })
-            ),
-          })
-        ),
-      ],
-    });
-
-    const treatmentChart = await generateChart({
+    const treatmentChart = await chartCanvas.renderToBuffer({
       type: "bar",
       data: {
         labels: treatmentRows.map((r) => r[0]),
-        datasets: [{
-          label: "Patients",
-          data: treatmentRows.map((r) => r[1]),
-          backgroundColor: "lightblue",
-        }],
+        datasets: [
+          {
+            data: treatmentRows.map((r) => r[1]),
+            backgroundColor: "lightblue",
+          },
+        ],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
           x: { title: { display: true, text: "Treatment" } },
-          y: { title: { display: true, text: "Number of Patients" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
 
     children.push(heading("Treatment Statistics"));
-    children.push(treatmentTable);
-    children.push(blank());
 
     children.push(
       new Paragraph({
@@ -344,7 +296,8 @@ exports.generateReport = async (req, res) => {
           alignment: AlignmentType.CENTER,
           children: [
             new TextRun({
-              text: "HEAD OF THE DEPARTMENT                                      PRINCIPAL",
+              text:
+                "HEAD OF THE DEPARTMENT                                      PRINCIPAL",
               font: "Times New Roman",
               size: 28,
               bold: true,
@@ -366,7 +319,8 @@ exports.generateReport = async (req, res) => {
     const buffer = await Packer.toBuffer(doc);
 
     const filename = "Camp_Report_" + Date.now() + ".docx";
-    const reportPath = path.join("/tmp/", filename);
+
+    const reportPath = path.join(__dirname, "../reports/", filename);
 
     fs.writeFileSync(reportPath, buffer);
 
@@ -377,7 +331,6 @@ exports.generateReport = async (req, res) => {
 
     res.setHeader("Content-Disposition", "attachment; filename=" + filename);
     res.send(buffer);
-
   } catch (err) {
     console.log(err);
     res.status(500).send("Error generating report");
