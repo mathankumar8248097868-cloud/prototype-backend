@@ -16,38 +16,43 @@ const {
   WidthType,
 } = require("docx");
 
+const axios = require("axios")
 const fs = require("fs")
 const path = require("path")
 const db = require("../config/db")
 
-const { ChartJSNodeCanvas } = require("chartjs-node-canvas")
-require("chart.js/auto")
+async function generateChart(config) {
+  const url = "https://quickchart.io/chart"
 
-const chartCanvas = new ChartJSNodeCanvas({
-  width: 800,
-  height: 500,
-});
+  const response = await axios.post(
+    url,
+    { chart: config },
+    { responseType: "arraybuffer" }
+  )
+
+  return Buffer.from(response.data)
+}
 
 exports.generateReport = async (req, res) => {
   try {
-    const d = req.body;
-    const photos = req.files || [];
-    const children = [];
+    const d = req.body
+    const photos = req.files || []
+    const children = []
 
-  const heading = (text) =>
-  new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { line: 360 },
-    children: [
-      new TextRun({
-        text: (text || "").toUpperCase(),
-        font: "Times New Roman",
-        size: 28,
-        bold: true,
-        underline: { type: UnderlineType.SINGLE },
-      }),
-    ],
-  });
+    const heading = (text) =>
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { line: 360 },
+        children: [
+          new TextRun({
+            text: (text || "").toUpperCase(),
+            font: "Times New Roman",
+            size: 28,
+            bold: true,
+            underline: { type: UnderlineType.SINGLE },
+          }),
+        ],
+      })
 
     const normalText = (text, center = false) =>
       new Paragraph({
@@ -60,47 +65,47 @@ exports.generateReport = async (req, res) => {
             size: 24,
           }),
         ],
-      });
+      })
 
     const blank = () =>
       new Paragraph({
         text: "",
         spacing: { line: 480 },
-      });
+      })
 
     // ================= PAGE 1 =================
-    children.push(heading(d.collegeName));
-    children.push(heading(d.departmentName));
-    children.push(heading(`Camp Report – ${d.campLocation}`));
-    children.push(heading(`Date: ${d.reportDateShort}`));
-    children.push(blank());
+    children.push(heading(d.collegeName))
+    children.push(heading(d.departmentName))
+    children.push(heading(`Camp Report – ${d.campLocation}`))
+    children.push(heading(`Date: ${d.reportDateShort}`))
+    children.push(blank())
 
     children.push(
       normalText(
         `Department of Public Health Dentistry, ${d.collegeName}, Madurai in association with ${d.associationName} and with ${d.projectName} conducted a dental screening and treatment camp at ${d.campLocation} on ${d.reportDateLong}.`
       )
-    );
+    )
 
     children.push(
       normalText(
         `Dr R. Palanivel Pandian organised this program. The Camp started at ${d.startTime} and ended at ${d.endTime}. A team of dentists including ${d.staffCount} staff member, ${d.postgraduateCount} postgraduate member and ${d.internCount} interns member provided oral health care to the people.`
       )
-    );
+    )
 
     children.push(
       normalText(
         `A total of ${d.totalPatients} people attended the dental camp and ${d.treatmentCount} people were treated along with oral health education and oral hygiene instructions.`
       )
-    );
+    )
 
-    children.push(new Paragraph({ children: [new PageBreak()] }));
+    children.push(new Paragraph({ children: [new PageBreak()] }))
 
     // ================= PAGE 2 PHOTOS =================
-    children.push(heading("Photos"));
+    children.push(heading("Photos"))
 
     for (let i = 0; i < photos.length; i += 2) {
-      const img1 = photos[i] ? fs.readFileSync(photos[i].path) : null;
-      const img2 = photos[i + 1] ? fs.readFileSync(photos[i + 1].path) : null;
+      const img1 = photos[i] ? fs.readFileSync(photos[i].path) : null
+      const img2 = photos[i + 1] ? fs.readFileSync(photos[i + 1].path) : null
 
       children.push(
         new Paragraph({
@@ -127,12 +132,12 @@ exports.generateReport = async (req, res) => {
               : new TextRun(""),
           ],
         })
-      );
+      )
 
-      children.push(blank());
+      children.push(blank())
     }
 
-    children.push(new Paragraph({ children: [new PageBreak()] }));
+    children.push(new Paragraph({ children: [new PageBreak()] }))
 
     // ================= PAGE 3 CAMP STATISTICS =================
     const campTable = new Table({
@@ -158,35 +163,25 @@ exports.generateReport = async (req, res) => {
           ],
         }),
       ],
-    });
+    })
 
-    const campChart = await chartCanvas.renderToBuffer({
+    const campChart = await generateChart({
       type: "bar",
       data: {
         labels: ["Male", "Female"],
         datasets: [
           {
+            label: "Patients",
             data: [parseInt(d.maleCount), parseInt(d.femaleCount)],
             backgroundColor: "lightblue",
           },
         ],
       },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            title: { display: true, text: "Gender" },
-          },
-          y: {
-            title: { display: true, text: "No of Patients" },
-          },
-        },
-      },
-    });
+    })
 
-    children.push(heading("Camp Statistics"));
-    children.push(campTable);
-    children.push(blank());
+    children.push(heading("Camp Statistics"))
+    children.push(campTable)
+    children.push(blank())
 
     children.push(
       new Paragraph({
@@ -195,21 +190,20 @@ exports.generateReport = async (req, res) => {
           new ImageRun({ data: campChart, transformation: { width: 500, height: 300 } }),
         ],
       })
-    );
+    )
 
-    children.push(new Paragraph({ children: [new PageBreak()] }));
+    children.push(new Paragraph({ children: [new PageBreak()] }))
 
-    // ================= PAGE 4 SCREENING STATISTICS =================
+    // ================= PAGE 4 SCREENING =================
     let screeningDataRows = [
       ["Dental Caries", d.dentalCaries],
       ["Gingivitis", d.gingivitis],
       ["Missing", d.missing],
-      
-    ];
+    ]
 
     if (d.extraScreening) {
-      const extra = JSON.parse(d.extraScreening);
-      extra.forEach((item) => screeningDataRows.push([item.name, item.value]));
+      const extra = JSON.parse(d.extraScreening)
+      extra.forEach((item) => screeningDataRows.push([item.name, item.value]))
     }
 
     const screeningTable = new Table({
@@ -229,57 +223,48 @@ exports.generateReport = async (req, res) => {
                 (val) =>
                   new TableCell({
                     children: [normalText(val, true)],
-                    verticalAlign: "center",
-                    width: { size: 50, type: WidthType.PERCENTAGE },
                   })
               ),
             })
         ),
       ],
-    });
+    })
 
-    const screeningChart = await chartCanvas.renderToBuffer({
+    const screeningChart = await generateChart({
       type: "bar",
       data: {
         labels: screeningDataRows.map((r) => r[0]),
         datasets: [
           {
-            label: "No of Patients",
-            data: screeningDataRows.map((r) => r[1]),
+            label: "Patients",
+            data: screeningDataRows.map((r) => parseInt(r[1])),
             backgroundColor: "lightblue",
           },
         ],
       },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { title: { display: true, text: "Diagnosis" } },
-          y: { title: { display: true, text: "No of Patients" } },
-        },
-      },
-    });
+    })
 
-    children.push(heading("Screening Statistics"));
-    children.push(screeningTable);
-    children.push(blank());
+    children.push(heading("Screening Statistics"))
+    children.push(screeningTable)
+    children.push(blank())
+
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
         children: [
           new ImageRun({ data: screeningChart, transformation: { width: 500, height: 300 } }),
         ],
-        spacing: { line: 360 },
       })
-    );
+    )
 
-    children.push(new Paragraph({ children: [new PageBreak()] }));
+    children.push(new Paragraph({ children: [new PageBreak()] }))
 
     // ================= PAGE 5 TREATMENT =================
-    let treatmentRows = [["Scaling", d.scaling || 0]];
+    let treatmentRows = [["Scaling", d.scaling || 0]]
 
     if (d.extraTreatment) {
-      const extraT = JSON.parse(d.extraTreatment);
-      extraT.forEach((item) => treatmentRows.push([item.name, item.value]));
+      const extraT = JSON.parse(d.extraTreatment)
+      extraT.forEach((item) => treatmentRows.push([item.name, item.value]))
     }
 
     const treatmentTable = new Table({
@@ -298,31 +283,24 @@ exports.generateReport = async (req, res) => {
           })
         ),
       ],
-    });
+    })
 
-    const treatmentChart = await chartCanvas.renderToBuffer({
+    const treatmentChart = await generateChart({
       type: "bar",
       data: {
         labels: treatmentRows.map((r) => r[0]),
         datasets: [
           {
-            data: treatmentRows.map((r) => r[1]),
+            data: treatmentRows.map((r) => parseInt(r[1])),
             backgroundColor: "lightblue",
           },
         ],
       },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { title: { display: true, text: "Treatment" } },
-          y: { title: { display: true, text: "No of Patients" } },
-        },
-      },
-    });
+    })
 
-    children.push(heading("Treatment Statistics"));
-    children.push(treatmentTable);
-    children.push(blank());
+    children.push(heading("Treatment Statistics"))
+    children.push(treatmentTable)
+    children.push(blank())
 
     children.push(
       new Paragraph({
@@ -331,9 +309,8 @@ exports.generateReport = async (req, res) => {
           new ImageRun({ data: treatmentChart, transformation: { width: 500, height: 300 } }),
         ],
       })
-    );
+    )
 
-    // ================= FOOTER =================
     const footer = new Footer({
       children: [
         new Paragraph({
@@ -348,7 +325,7 @@ exports.generateReport = async (req, res) => {
           ],
         }),
       ],
-    });
+    })
 
     const doc = new Document({
       sections: [
@@ -357,27 +334,25 @@ exports.generateReport = async (req, res) => {
           children,
         },
       ],
-    });
+    })
 
-    const buffer = await Packer.toBuffer(doc);
+    const buffer = await Packer.toBuffer(doc)
 
     const filename = "Camp_Report_" + Date.now() + ".docx"
-    const reportPath = path.join("/tmp/",filename)
+    const reportPath = path.join("/tmp/", filename)
 
-    // save report file in server
-    fs.writeFileSync(reportPath,buffer)
+    fs.writeFileSync(reportPath, buffer)
 
-    // save report info in database
     db.query(
-    "INSERT INTO reports(username,filename,created_date,created_time) VALUES(?,?,CURDATE(),CURTIME())",
-    [req.session.user,filename]
+      "INSERT INTO reports(username,filename,created_date,created_time) VALUES(?,?,CURDATE(),CURTIME())",
+      [req.session.user, filename]
     )
 
-// download file to user
-res.setHeader("Content-Disposition","attachment; filename="+filename)
-res.send(buffer)
+    res.setHeader("Content-Disposition", "attachment; filename=" + filename)
+    res.send(buffer)
+
   } catch (err) {
-    console.log(err);
-    res.status(500).send("Error generating report");
+    console.log(err)
+    res.status(500).send("Error generating report")
   }
-};
+}
