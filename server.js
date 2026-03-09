@@ -17,13 +17,14 @@ credentials:true
 app.use(express.json())
 
 app.use(session({
-   secret:"ultra-secret",
-   resave:false,
-   saveUninitialized:true,
-   cookie:{
-   secure:true,
-   sameSite:"none"
+secret:"secretkey",
+resave:false,
+saveUninitialized:false,
+cookie:{
+secure:true,
+sameSite:"none"
 }
+}))
 }))
 
 // ================= USER LOGIN =================
