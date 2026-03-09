@@ -21,7 +21,7 @@ const path = require("path");
 const db = require("../config/db");
 const axios = require("axios");
 
-// =================== Helper: generate chart image using QuickChart ===================
+// =================== Helper: generate chart with values below bars ===================
 async function generateChart(labels, data, xLabel, yLabel) {
   const chartConfig = {
     type: "bar",
@@ -33,25 +33,37 @@ async function generateChart(labels, data, xLabel, yLabel) {
           data: data,
           backgroundColor: "lightblue",
         },
+        {
+          label: "values_below",
+          data: data,
+          backgroundColor: "transparent",
+          datalabels: {
+            anchor: 'end',
+            align: 'start',
+            display: true,
+            formatter: function(value) { return value; },
+            font: { size: 14 },
+          },
+        },
       ],
     },
     options: {
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: true,
+          anchor: 'end',
+          align: 'start',
+          color: 'black',
+          font: { size: 14 },
+        },
+      },
       scales: {
         x: {
-          title: {
-            display: true,
-            text: xLabel,
-            font: { size: 16 },
-          },
+          title: { display: true, text: xLabel, font: { size: 16 } },
         },
         y: {
-          title: {
-            display: true,
-            text: yLabel,
-            font: { size: 16 },
-            // Rotate Y-axis label to be vertical (default is vertical in QuickChart)
-          },
+          title: { display: true, text: yLabel, font: { size: 16 } },
           beginAtZero: true,
         },
       },
@@ -60,7 +72,7 @@ async function generateChart(labels, data, xLabel, yLabel) {
 
   const chartUrl = `https://quickchart.io/chart?c=${encodeURIComponent(
     JSON.stringify(chartConfig)
-  )}&format=png&width=500&height=300`;
+  )}&format=png&width=500&height=300&plugins=chartjs-plugin-datalabels`;
 
   const response = await axios.get(chartUrl, { responseType: "arraybuffer" });
   return response.data;
@@ -152,17 +164,11 @@ exports.generateReport = async (req, res) => {
           spacing: { line: 360 },
           children: [
             img1
-              ? new ImageRun({
-                  data: img1,
-                  transformation: { width: 250, height: 170 },
-                })
+              ? new ImageRun({ data: img1, transformation: { width: 250, height: 170 } })
               : new TextRun(""),
             new TextRun({ text: "\t" }),
             img2
-              ? new ImageRun({
-                  data: img2,
-                  transformation: { width: 250, height: 170 },
-                })
+              ? new ImageRun({ data: img2, transformation: { width: 250, height: 170 } })
               : new TextRun(""),
           ],
         })
@@ -202,18 +208,15 @@ exports.generateReport = async (req, res) => {
     const campChart = await generateChart(
       ["Male", "Female"],
       [parseInt(d.maleCount), parseInt(d.femaleCount)],
-      "Gender", // X-axis below
-      "No of Patients" // Y-axis vertical
+      "Gender",
+      "No of Patients"
     );
 
     children.push(heading("Camp Statistics"));
     children.push(campTable);
     children.push(blank());
     children.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new ImageRun({ data: campChart, transformation: { width: 500, height: 300 } })],
-      })
+      new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ data: campChart, transformation: { width: 500, height: 300 } })] })
     );
 
     children.push(new Paragraph({ children: [new PageBreak()] }));
@@ -245,11 +248,7 @@ exports.generateReport = async (req, res) => {
             new TableRow({
               children: row.map(
                 (val) =>
-                  new TableCell({
-                    children: [normalText(val, true)],
-                    verticalAlign: "center",
-                    width: { size: 50, type: WidthType.PERCENTAGE },
-                  })
+                  new TableCell({ children: [normalText(val, true)], verticalAlign: "center", width: { size: 50, type: WidthType.PERCENTAGE } })
               ),
             })
         ),
@@ -267,16 +266,12 @@ exports.generateReport = async (req, res) => {
     children.push(screeningTable);
     children.push(blank());
     children.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new ImageRun({ data: screeningChart, transformation: { width: 500, height: 300 } })],
-        spacing: { line: 360 },
-      })
+      new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ data: screeningChart, transformation: { width: 500, height: 300 } })], spacing: { line: 360 } })
     );
 
     children.push(new Paragraph({ children: [new PageBreak()] }));
 
-    // ================= PAGE 5 TREATMENT STATISTICS =================
+    // ================= PAGE 5 TREATMENT =================
     let treatmentRows = [["Scaling", d.scaling || 0]];
 
     if (d.extraTreatment) {
@@ -295,9 +290,7 @@ exports.generateReport = async (req, res) => {
           ],
         }),
         ...treatmentRows.map((row) =>
-          new TableRow({
-            children: row.map((val) => new TableCell({ children: [normalText(val, true)] })),
-          })
+          new TableRow({ children: row.map((val) => new TableCell({ children: [normalText(val, true)] })) })
         ),
       ],
     });
@@ -313,10 +306,7 @@ exports.generateReport = async (req, res) => {
     children.push(treatmentTable);
     children.push(blank());
     children.push(
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new ImageRun({ data: treatmentChart, transformation: { width: 500, height: 300 } })],
-      })
+      new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ data: treatmentChart, transformation: { width: 500, height: 300 } })] })
     );
 
     // ================= FOOTER =================
@@ -336,15 +326,7 @@ exports.generateReport = async (req, res) => {
       ],
     });
 
-    const doc = new Document({
-      sections: [
-        {
-          footers: { default: footer },
-          children,
-        },
-      ],
-    });
-
+    const doc = new Document({ sections: [{ footers: { default: footer }, children }] });
     const buffer = await Packer.toBuffer(doc);
 
     const filename = "Camp_Report_" + Date.now() + ".docx";
@@ -362,6 +344,7 @@ exports.generateReport = async (req, res) => {
     // download file to user
     res.setHeader("Content-Disposition", "attachment; filename=" + filename);
     res.send(buffer);
+
   } catch (err) {
     console.log(err);
     res.status(500).send("Error generating report");
