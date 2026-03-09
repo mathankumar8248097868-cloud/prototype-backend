@@ -35,6 +35,7 @@ async function generateChart(config) {
 
 exports.generateReport = async (req, res) => {
   try {
+
     const d = req.body;
     const photos = req.files || [];
     const children = [];
@@ -107,12 +108,15 @@ exports.generateReport = async (req, res) => {
     children.push(heading("Photos"));
 
     for (let i = 0; i < photos.length; i += 2) {
+
       const img1 = photos[i] ? fs.readFileSync(photos[i].path) : null;
       const img2 = photos[i + 1] ? fs.readFileSync(photos[i + 1].path) : null;
 
       children.push(
         new Paragraph({
-          tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+          tabStops: [
+            { type: TabStopType.RIGHT, position: TabStopPosition.MAX },
+          ],
           spacing: { line: 360 },
           children: [
             img1
@@ -194,13 +198,97 @@ exports.generateReport = async (req, res) => {
       })
     );
 
+    children.push(new Paragraph({ children: [new PageBreak()] }));
+
+    // ================= PAGE 4 SCREENING =================
+
+    let screeningRows = [
+      ["Dental Caries", d.dentalCaries],
+      ["Gingivitis", d.gingivitis],
+      ["Missing", d.missing],
+    ];
+
+    if (d.extraScreening) {
+      const extra = JSON.parse(d.extraScreening);
+      extra.forEach((e) => screeningRows.push([e.name, e.value]));
+    }
+
+    const screeningChart = await generateChart({
+      type: "bar",
+      data: {
+        labels: screeningRows.map((r) => r[0]),
+        datasets: [
+          {
+            label: "Patients",
+            data: screeningRows.map((r) => r[1]),
+            backgroundColor: "lightblue",
+          },
+        ],
+      },
+    });
+
+    children.push(heading("Screening Statistics"));
+
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new ImageRun({
+            data: screeningChart,
+            transformation: { width: 500, height: 300 },
+          }),
+        ],
+      })
+    );
+
+    children.push(new Paragraph({ children: [new PageBreak()] }));
+
+    // ================= PAGE 5 TREATMENT =================
+
+    let treatmentRows = [["Scaling", d.scaling || 0]];
+
+    if (d.extraTreatment) {
+      const extra = JSON.parse(d.extraTreatment);
+      extra.forEach((e) => treatmentRows.push([e.name, e.value]));
+    }
+
+    const treatmentChart = await generateChart({
+      type: "bar",
+      data: {
+        labels: treatmentRows.map((r) => r[0]),
+        datasets: [
+          {
+            label: "Patients",
+            data: treatmentRows.map((r) => r[1]),
+            backgroundColor: "lightblue",
+          },
+        ],
+      },
+    });
+
+    children.push(heading("Treatment Statistics"));
+
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new ImageRun({
+            data: treatmentChart,
+            transformation: { width: 500, height: 300 },
+          }),
+        ],
+      })
+    );
+
+    // ================= FOOTER =================
+
     const footer = new Footer({
       children: [
         new Paragraph({
           alignment: AlignmentType.CENTER,
           children: [
             new TextRun({
-              text: "HEAD OF THE DEPARTMENT PRINCIPAL",
+              text: "HEAD OF THE DEPARTMENT                                      PRINCIPAL",
               font: "Times New Roman",
               size: 28,
               bold: true,
@@ -211,7 +299,12 @@ exports.generateReport = async (req, res) => {
     });
 
     const doc = new Document({
-      sections: [{ footers: { default: footer }, children }],
+      sections: [
+        {
+          footers: { default: footer },
+          children,
+        },
+      ],
     });
 
     const buffer = await Packer.toBuffer(doc);
@@ -220,6 +313,8 @@ exports.generateReport = async (req, res) => {
     const reportPath = path.join("/tmp/", filename);
 
     fs.writeFileSync(reportPath, buffer);
+
+    // SAVE REPORT
 
     db.query(
       "INSERT INTO reports(username,filename,created_date,created_time) VALUES(?,?,CURDATE(),CURTIME())",
@@ -230,7 +325,9 @@ exports.generateReport = async (req, res) => {
     res.send(buffer);
 
   } catch (err) {
+
     console.log(err);
     res.status(500).send("Error generating report");
+
   }
 };
