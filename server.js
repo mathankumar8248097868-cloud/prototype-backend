@@ -6,27 +6,27 @@ const session = require("express-session")
 const reportRoutes = require("./routes/reportRoutes")
 const db = require("./config/db")
 
-const app = express()
+const app = express();
+
+app.set("trust proxy", 1);
 
 app.use(cors({
-origin:[
-"https://mathankumar8248097868-cloud.github.io"
-],
-credentials:true
-}))
+  origin:["https://mathankumar8248097868-cloud.github.io"],
+  credentials:true
+}));
 
-app.use(express.json())
+app.use(express.json());
 
 app.use(session({
-secret:"secretkey",
-resave:false,
-saveUninitialized:false,
-cookie:{
-secure:true,
-sameSite:"none",
-maxAge:1000*60*60*24
-}
-}))
+  secret:"secretkey",
+  resave:false,
+  saveUninitialized:false,
+  cookie:{
+    secure:true,
+    sameSite:"none",
+    maxAge:1000*60*60*24
+  }
+}));
 
 // ================= USER LOGIN =================
 
