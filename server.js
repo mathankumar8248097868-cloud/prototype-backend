@@ -30,31 +30,36 @@ app.use(session({
 
 // ================= USER LOGIN =================
 
-app.post("/api/report",(req,res)=>{
+// ================= USER LOGIN =================
 
-if(!req.session.user){
-return res.json({success:false})
-}
+app.post("/api/login",(req,res)=>{
 
-const username = req.session.user
-const report = req.body.report
+const {username,password} = req.body
 
-db.query(
-"INSERT INTO reports (username,report) VALUES (?,?)",
-[username,report],
-(err,result)=>{
+const sql = "SELECT * FROM users WHERE username=? AND password=?"
+
+db.query(sql,[username,password],(err,result)=>{
 
 if(err){
 console.log(err)
 return res.json({success:false})
 }
 
+if(result.length > 0){
+
+req.session.user = username
+
 res.json({success:true})
 
-})
+}else{
+
+res.json({success:false})
+
+}
 
 })
 
+})
 
 // ================= ADMIN LOGIN =================
 
