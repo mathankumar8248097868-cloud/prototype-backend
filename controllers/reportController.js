@@ -21,7 +21,7 @@ const fs = require("fs");
 const path = require("path");
 const db = require("../config/db");
 
-// Chart generator using QuickChart API
+// Generate chart using QuickChart API
 async function generateChart(config) {
   const response = await axios.post(
     "https://quickchart.io/chart",
@@ -33,7 +33,6 @@ async function generateChart(config) {
 
 exports.generateReport = async (req, res) => {
   try {
-
     const d = req.body;
     const photos = req.files || [];
     const children = [];
@@ -105,7 +104,6 @@ exports.generateReport = async (req, res) => {
     children.push(heading("Photos"));
 
     for (let i = 0; i < photos.length; i += 2) {
-
       const img1 = photos[i] ? fs.readFileSync(photos[i].path) : null;
       const img2 = photos[i + 1] ? fs.readFileSync(photos[i + 1].path) : null;
 
@@ -173,6 +171,13 @@ exports.generateReport = async (req, res) => {
           backgroundColor: "lightblue",
         }],
       },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: "Gender" } },
+          y: { title: { display: true, text: "Number of Patients" } },
+        },
+      },
     });
 
     children.push(heading("Camp Statistics"));
@@ -216,9 +221,9 @@ exports.generateReport = async (req, res) => {
             new TableCell({ children: [normalText("No of Patients", true)] }),
           ],
         }),
-        ...screeningRows.map(row =>
+        ...screeningRows.map((row) =>
           new TableRow({
-            children: row.map(val =>
+            children: row.map((val) =>
               new TableCell({
                 children: [normalText(val, true)],
               })
@@ -231,12 +236,19 @@ exports.generateReport = async (req, res) => {
     const screeningChart = await generateChart({
       type: "bar",
       data: {
-        labels: screeningRows.map(r => r[0]),
+        labels: screeningRows.map((r) => r[0]),
         datasets: [{
           label: "Patients",
-          data: screeningRows.map(r => r[1]),
+          data: screeningRows.map((r) => r[1]),
           backgroundColor: "lightblue",
         }],
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: "Diagnosis" } },
+          y: { title: { display: true, text: "Number of Patients" } },
+        },
       },
     });
 
@@ -277,9 +289,9 @@ exports.generateReport = async (req, res) => {
             new TableCell({ children: [normalText("No of Patients", true)] }),
           ],
         }),
-        ...treatmentRows.map(row =>
+        ...treatmentRows.map((row) =>
           new TableRow({
-            children: row.map(val =>
+            children: row.map((val) =>
               new TableCell({
                 children: [normalText(val, true)],
               })
@@ -292,12 +304,19 @@ exports.generateReport = async (req, res) => {
     const treatmentChart = await generateChart({
       type: "bar",
       data: {
-        labels: treatmentRows.map(r => r[0]),
+        labels: treatmentRows.map((r) => r[0]),
         datasets: [{
           label: "Patients",
-          data: treatmentRows.map(r => r[1]),
+          data: treatmentRows.map((r) => r[1]),
           backgroundColor: "lightblue",
         }],
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: "Treatment" } },
+          y: { title: { display: true, text: "Number of Patients" } },
+        },
       },
     });
 
@@ -360,9 +379,7 @@ exports.generateReport = async (req, res) => {
     res.send(buffer);
 
   } catch (err) {
-
     console.log(err);
     res.status(500).send("Error generating report");
-
   }
 };
