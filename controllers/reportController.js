@@ -108,9 +108,7 @@ exports.generateReport = async (req, res) => {
 
     for (let i = 0; i < photos.length; i += 2) {
       const img1 = photos[i] ? fs.readFileSync(photos[i].path) : null;
-      const img2 = photos[i + 1]
-        ? fs.readFileSync(photos[i + 1].path)
-        : null;
+      const img2 = photos[i + 1] ? fs.readFileSync(photos[i + 1].path) : null;
 
       children.push(
         new Paragraph({
@@ -155,25 +153,19 @@ exports.generateReport = async (req, res) => {
         new TableRow({
           children: [
             new TableCell({ children: [normalText("Gender", true)] }),
-            new TableCell({
-              children: [normalText("No of Patients", true)],
-            }),
+            new TableCell({ children: [normalText("No of Patients", true)] }),
           ],
         }),
         new TableRow({
           children: [
             new TableCell({ children: [normalText("Male", true)] }),
-            new TableCell({
-              children: [normalText(d.maleCount, true)],
-            }),
+            new TableCell({ children: [normalText(d.maleCount, true)] }),
           ],
         }),
         new TableRow({
           children: [
             new TableCell({ children: [normalText("Female", true)] }),
-            new TableCell({
-              children: [normalText(d.femaleCount, true)],
-            }),
+            new TableCell({ children: [normalText(d.femaleCount, true)] }),
           ],
         }),
       ],
@@ -221,9 +213,7 @@ exports.generateReport = async (req, res) => {
 
     if (d.extraScreening) {
       const extra = JSON.parse(d.extraScreening);
-      extra.forEach((item) =>
-        screeningDataRows.push([item.name, item.value])
-      );
+      extra.forEach((item) => screeningDataRows.push([item.name, item.value]));
     }
 
     const screeningTable = new Table({
@@ -232,12 +222,8 @@ exports.generateReport = async (req, res) => {
       rows: [
         new TableRow({
           children: [
-            new TableCell({
-              children: [normalText("Diagnosis", true)],
-            }),
-            new TableCell({
-              children: [normalText("No of Patients", true)],
-            }),
+            new TableCell({ children: [normalText("Diagnosis", true)] }),
+            new TableCell({ children: [normalText("No of Patients", true)] }),
           ],
         }),
         ...screeningDataRows.map(
@@ -261,9 +247,7 @@ exports.generateReport = async (req, res) => {
         datasets: [
           {
             label: "Patients",
-            data: screeningDataRows.map((r) =>
-              parseInt(r[1])
-            ),
+            data: screeningDataRows.map((r) => parseInt(r[1])),
             backgroundColor: "lightblue",
           },
         ],
@@ -294,9 +278,7 @@ exports.generateReport = async (req, res) => {
 
     if (d.extraTreatment) {
       const extraT = JSON.parse(d.extraTreatment);
-      extraT.forEach((item) =>
-        treatmentRows.push([item.name, item.value])
-      );
+      extraT.forEach((item) => treatmentRows.push([item.name, item.value]));
     }
 
     const treatmentTable = new Table({
@@ -305,12 +287,8 @@ exports.generateReport = async (req, res) => {
       rows: [
         new TableRow({
           children: [
-            new TableCell({
-              children: [normalText("Treatment", true)],
-            }),
-            new TableCell({
-              children: [normalText("No of Patients", true)],
-            }),
+            new TableCell({ children: [normalText("Treatment", true)] }),
+            new TableCell({ children: [normalText("No of Patients", true)] }),
           ],
         }),
         ...treatmentRows.map(
@@ -384,8 +362,8 @@ exports.generateReport = async (req, res) => {
     const buffer = await Packer.toBuffer(doc);
 
     const filename = "Camp_Report_" + Date.now() + ".docx";
-
     const reportPath = path.join("/tmp/", filename);
+
     fs.writeFileSync(reportPath, buffer);
 
     db.query(
@@ -393,12 +371,9 @@ exports.generateReport = async (req, res) => {
       [req.session.user, filename]
     );
 
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=" + filename
-    );
-
+    res.setHeader("Content-Disposition", "attachment; filename=" + filename);
     res.send(buffer);
+
   } catch (err) {
     console.log(err);
     res.status(500).send("Error generating report");
