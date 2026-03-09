@@ -38,8 +38,22 @@ async function generateChart(labels, data, xLabel, yLabel) {
     options: {
       plugins: { legend: { display: false } },
       scales: {
-        x: { title: { display: true, text: xLabel } },
-        y: { title: { display: true, text: yLabel }, beginAtZero: true },
+        x: {
+          title: {
+            display: true,
+            text: xLabel,
+            font: { size: 16 },
+          },
+        },
+        y: {
+          title: {
+            display: true,
+            text: yLabel,
+            font: { size: 16 },
+            // Rotate Y-axis label to be vertical (default is vertical in QuickChart)
+          },
+          beginAtZero: true,
+        },
       },
     },
   };
@@ -49,7 +63,7 @@ async function generateChart(labels, data, xLabel, yLabel) {
   )}&format=png&width=500&height=300`;
 
   const response = await axios.get(chartUrl, { responseType: "arraybuffer" });
-  return response.data; // returns image buffer
+  return response.data;
 }
 
 // =================== Main Report Function ===================
@@ -188,8 +202,8 @@ exports.generateReport = async (req, res) => {
     const campChart = await generateChart(
       ["Male", "Female"],
       [parseInt(d.maleCount), parseInt(d.femaleCount)],
-      "Gender",
-      "No of Patients"
+      "Gender", // X-axis below
+      "No of Patients" // Y-axis vertical
     );
 
     children.push(heading("Camp Statistics"));
