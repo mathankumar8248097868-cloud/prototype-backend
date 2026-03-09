@@ -77,26 +77,26 @@ exports.generateReport = async (req, res) => {
 
     children.push(heading(d.collegeName));
     children.push(heading(d.departmentName));
-    children.push(heading(`Camp Report – ${d.campLocation}`));
-    children.push(heading(`Date: ${d.reportDateShort}`));
+    children.push(heading(Camp Report – ${d.campLocation}));
+    children.push(heading(Date: ${d.reportDateShort}));
 
     children.push(blank());
 
     children.push(
       normalText(
-        `Department of Public Health Dentistry, ${d.collegeName}, Madurai in association with ${d.associationName} and with ${d.projectName} conducted a dental screening and treatment camp at ${d.campLocation} on ${d.reportDateLong}.`
+        Department of Public Health Dentistry, ${d.collegeName}, Madurai in association with ${d.associationName} and with ${d.projectName} conducted a dental screening and treatment camp at ${d.campLocation} on ${d.reportDateLong}.
       )
     );
 
     children.push(
       normalText(
-        `Dr R. Palanivel Pandian organised this program. The Camp started at ${d.startTime} and ended at ${d.endTime}. A team of dentists including ${d.staffCount} staff member, ${d.postgraduateCount} postgraduate member and ${d.internCount} interns member provided oral health care to the people.`
+        Dr R. Palanivel Pandian organised this program. The Camp started at ${d.startTime} and ended at ${d.endTime}. A team of dentists including ${d.staffCount} staff member, ${d.postgraduateCount} postgraduate member and ${d.internCount} interns member provided oral health care to the people.
       )
     );
 
     children.push(
       normalText(
-        `A total of ${d.totalPatients} people attended the dental camp and ${d.treatmentCount} people were treated along with oral health education and oral hygiene instructions.`
+        A total of ${d.totalPatients} people attended the dental camp and ${d.treatmentCount} people were treated along with oral health education and oral hygiene instructions.
       )
     );
 
@@ -126,9 +126,7 @@ exports.generateReport = async (req, res) => {
                   transformation: { width: 250, height: 170 },
                 })
               : new TextRun(""),
-
             new TextRun({ text: "\t" }),
-
             img2
               ? new ImageRun({
                   data: img2,
