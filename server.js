@@ -30,29 +30,26 @@ app.use(session({
 
 // ================= USER LOGIN =================
 
-app.post("/api/login",(req,res)=>{
+app.post("/api/report",(req,res)=>{
 
-const {username,password} = req.body
+if(!req.session.user){
+return res.json({success:false})
+}
 
-const sql = "SELECT * FROM users WHERE username=? AND password=?"
+const username = req.session.user
+const report = req.body.report
 
-db.query(sql,[username,password],(err,result)=>{
+db.query(
+"INSERT INTO reports (username,report) VALUES (?,?)",
+[username,report],
+(err,result)=>{
 
 if(err){
 console.log(err)
 return res.json({success:false})
 }
 
-if(result.length > 0){
-
-req.session.user = username
 res.json({success:true})
-
-}else{
-
-res.json({success:false})
-
-}
 
 })
 
