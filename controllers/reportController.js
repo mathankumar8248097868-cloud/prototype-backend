@@ -262,7 +262,7 @@ exports.generateReport = async (req, res) => {
 
     children.push(new Paragraph({ children: [new PageBreak()] }));
 
-    // ================= PAGE 5 TREATMENT =================
+    // ================= PAGE 5 TREATMENT STATISTICS =================
     let treatmentRows = [["Scaling", d.scaling || 0]];
 
     if (d.extraTreatment) {
