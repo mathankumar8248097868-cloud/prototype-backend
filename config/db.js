@@ -16,41 +16,49 @@ client.connect()
 
   console.log("PostgreSQL Connected")
 
-  // DROP TABLES
-  await client.query("DROP TABLE IF EXISTS reports")
-  await client.query("DROP TABLE IF EXISTS users")
+ // DROP tables
+    db.query("DROP TABLE IF EXISTS reports")
+    db.query("DROP TABLE IF EXISTS users")
 
-  // CREATE USERS TABLE
-  const usersTable = `
-  CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50),
-    password VARCHAR(50),
-    created_date DATE,
-    created_time TIME
-  )
-  `
+    // CREATE USERS TABLE
+    const usersTable = `
+    CREATE TABLE users (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(50),
+      password VARCHAR(50),
+      created_date DATE,
+      created_time TIME
+    )
+    `
 
-  await client.query(usersTable)
-  console.log("Users table created")
+    db.query(usersTable,(err)=>{
+      if(err){
+        console.log("Users table error",err)
+      }else{
+        console.log("Users table created")
+      }
+    })
 
-  // CREATE REPORTS TABLE
-  const reportsTable = `
-  CREATE TABLE IF NOT EXISTS reports (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50),
-    filename VARCHAR(255),
-    created_date DATE,
-    created_time TIME
-  )
-  `
+    // CREATE REPORTS TABLE
+    const reportsTable = `
+    CREATE TABLE reports (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(50),
+      filename VARCHAR(255),
+      created_date DATE,
+      created_time TIME
+    )
+    `
 
-  await client.query(reportsTable)
-  console.log("Reports table created")
+    db.query(reportsTable,(err)=>{
+      if(err){
+        console.log("Reports table error",err)
+      }else{
+        console.log("Reports table created")
+      }
+    })
 
+  }
 })
-.catch(err => {
-  console.log("Database connection error:", err)
-})
 
-module.exports = client
+module.exports = db
