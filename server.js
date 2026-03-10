@@ -163,8 +163,7 @@ app.use((req, res, next) => {
 // ================= STATIC FILES =================
 
 app.use(express.static(path.join(__dirname, "../frontend"), { index: false }))
-app.use("/reports", express.static(path.join(__dirname, "reports")))
-
+app.use("/reports", express.static("/tmp"))
 // ================= START SERVER =================
 
 const PORT = process.env.PORT || 5000
