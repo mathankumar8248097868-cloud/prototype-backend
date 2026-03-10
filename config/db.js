@@ -1,54 +1,63 @@
-const { Pool } = require("pg")
+const mysql = require("mysql2")
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+const db = mysql.createConnection({
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 })
 
-pool.connect(async (err, client, release) => {
+db.connect(err => {
   if (err) {
     console.log("Database error", err)
   } else {
 
-    console.log("PostgreSQL Connected")
+    console.log("MySQL Connected")
 
-    try {
+    // DROP tables
+    db.query("DROP TABLE IF EXISTS reports")
+    db.query("DROP TABLE IF EXISTS users")
 
-      await client.query("DROP TABLE IF EXISTS reports")
-      await client.query("DROP TABLE IF EXISTS users")
+    // CREATE USERS TABLE
+    const usersTable = `
+    CREATE TABLE users (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(50),
+      password VARCHAR(50),
+      created_date DATE,
+      created_time TIME
+    )
+    `
 
-      await client.query(`
-        CREATE TABLE users (
-          id SERIAL PRIMARY KEY,
-          username VARCHAR(50),
-          password VARCHAR(50),
-          created_date DATE,
-          created_time TIME
-        )
-      `)
+    db.query(usersTable,(err)=>{
+      if(err){
+        console.log("Users table error",err)
+      }else{
+        console.log("Users table created")
+      }
+    })
 
-      console.log("Users table created")
+    // CREATE REPORTS TABLE
+    const reportsTable = `
+    CREATE TABLE reports (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(50),
+      filename VARCHAR(255),
+      created_date DATE,
+      created_time TIME
+    )
+    `
 
-      await client.query(`
-        CREATE TABLE reports (
-          id SERIAL PRIMARY KEY,
-          username VARCHAR(50),
-          filename VARCHAR(255),
-          created_date DATE,
-          created_time TIME
-        )
-      `)
+    db.query(reportsTable,(err)=>{
+      if(err){
+        console.log("Reports table error",err)
+      }else{
+        console.log("Reports table created")
+      }
+    })
 
-      console.log("Reports table created")
-
-    } catch (error) {
-      console.log("Table creation error", error)
-    }
-
-    release()
   }
 })
 
-module.exports = pool
+module.exports = db
