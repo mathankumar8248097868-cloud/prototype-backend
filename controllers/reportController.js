@@ -16,12 +16,13 @@ const {
   WidthType,
 } = require("docx");
 
+// ── Code 4 infrastructure: axios + QuickChart, db, path ───────────────────────
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
-const db = require("../config/db");
+const fs    = require("fs");
+const path  = require("path");
+const db    = require("../config/db");
 
-// Generate chart using QuickChart API
+// QuickChart API chart generator (Code 4 – works without native canvas)
 async function generateChart(config) {
   const response = await axios.post(
     "https://quickchart.io/chart",
@@ -33,9 +34,11 @@ async function generateChart(config) {
 
 exports.generateReport = async (req, res) => {
   try {
-    const d = req.body;
+    const d      = req.body;
     const photos = req.files || [];
     const children = [];
+
+    // ── Helper functions (Code 3 formatting) ────────────────────────────────
 
     const heading = (text) =>
       new Paragraph({
@@ -71,7 +74,7 @@ exports.generateReport = async (req, res) => {
         spacing: { line: 480 },
       });
 
-    // ================= PAGE 1 =================
+    // ── PAGE 1 – Cover & Summary ─────────────────────────────────────────────
 
     children.push(heading(d.collegeName));
     children.push(heading(d.departmentName));
@@ -99,31 +102,31 @@ exports.generateReport = async (req, res) => {
 
     children.push(new Paragraph({ children: [new PageBreak()] }));
 
-    // ================= PAGE 2 PHOTOS =================
+    // ── PAGE 2 – Photos ──────────────────────────────────────────────────────
+    // Code 3: proper tabStop with { text: "\t" } TextRun for side-by-side layout
 
     children.push(heading("Photos"));
 
     for (let i = 0; i < photos.length; i += 2) {
-      const img1 = photos[i] ? fs.readFileSync(photos[i].path) : null;
+      const img1 = photos[i]     ? fs.readFileSync(photos[i].path)     : null;
       const img2 = photos[i + 1] ? fs.readFileSync(photos[i + 1].path) : null;
 
       children.push(
         new Paragraph({
-          tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+          tabStops: [
+            {
+              type: TabStopType.RIGHT,
+              position: TabStopPosition.MAX,
+            },
+          ],
           spacing: { line: 360 },
           children: [
             img1
-              ? new ImageRun({
-                  data: img1,
-                  transformation: { width: 250, height: 170 },
-                })
+              ? new ImageRun({ data: img1, transformation: { width: 250, height: 170 } })
               : new TextRun(""),
-            new TextRun("\t"),
+            new TextRun({ text: "\t" }),           // Code 3: object form (not plain "\t")
             img2
-              ? new ImageRun({
-                  data: img2,
-                  transformation: { width: 250, height: 170 },
-                })
+              ? new ImageRun({ data: img2, transformation: { width: 250, height: 170 } })
               : new TextRun(""),
           ],
         })
@@ -134,7 +137,7 @@ exports.generateReport = async (req, res) => {
 
     children.push(new Paragraph({ children: [new PageBreak()] }));
 
-    // ================= PAGE 3 CAMP STATISTICS =================
+    // ── PAGE 3 – Camp Statistics ─────────────────────────────────────────────
 
     const campTable = new Table({
       alignment: AlignmentType.CENTER,
@@ -161,21 +164,23 @@ exports.generateReport = async (req, res) => {
       ],
     });
 
+    // Code 3 chart options: no dataset label, y-axis "No of Patients"
     const campChart = await generateChart({
       type: "bar",
       data: {
         labels: ["Male", "Female"],
-        datasets: [{
-          label: "Patients",
-          data: [parseInt(d.maleCount), parseInt(d.femaleCount)],
-          backgroundColor: "lightblue",
-        }],
+        datasets: [
+          {
+            data: [parseInt(d.maleCount), parseInt(d.femaleCount)],
+            backgroundColor: "lightblue",
+          },
+        ],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
           x: { title: { display: true, text: "Gender" } },
-          y: { title: { display: true, text: "Number of Patients" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
@@ -188,27 +193,25 @@ exports.generateReport = async (req, res) => {
       new Paragraph({
         alignment: AlignmentType.CENTER,
         children: [
-          new ImageRun({
-            data: campChart,
-            transformation: { width: 500, height: 300 },
-          }),
+          new ImageRun({ data: campChart, transformation: { width: 500, height: 300 } }),
         ],
       })
     );
 
     children.push(new Paragraph({ children: [new PageBreak()] }));
 
-    // ================= PAGE 4 SCREENING =================
+    // ── PAGE 4 – Screening Statistics ───────────────────────────────────────
+    // Code 3: verticalAlign + per-cell width 50% on screening table
 
-    let screeningRows = [
+    let screeningDataRows = [
       ["Dental Caries", d.dentalCaries],
-      ["Gingivitis", d.gingivitis],
-      ["Missing", d.missing],
+      ["Gingivitis",    d.gingivitis],
+      ["Missing",       d.missing],
     ];
 
     if (d.extraScreening) {
       const extra = JSON.parse(d.extraScreening);
-      extra.forEach((item) => screeningRows.push([item.name, item.value]));
+      extra.forEach((item) => screeningDataRows.push([item.name, item.value]));
     }
 
     const screeningTable = new Table({
@@ -221,33 +224,40 @@ exports.generateReport = async (req, res) => {
             new TableCell({ children: [normalText("No of Patients", true)] }),
           ],
         }),
-        ...screeningRows.map((row) =>
-          new TableRow({
-            children: row.map((val) =>
-              new TableCell({
-                children: [normalText(val, true)],
-              })
-            ),
-          })
+        ...screeningDataRows.map(
+          (row) =>
+            new TableRow({
+              children: row.map(
+                (val) =>
+                  new TableCell({
+                    children: [normalText(val, true)],
+                    verticalAlign: "center",                      // Code 3 feature
+                    width: { size: 50, type: WidthType.PERCENTAGE }, // Code 3 feature
+                  })
+              ),
+            })
         ),
       ],
     });
 
+    // Code 3 chart options: dataset label "No of Patients", spacing on paragraph
     const screeningChart = await generateChart({
       type: "bar",
       data: {
-        labels: screeningRows.map((r) => r[0]),
-        datasets: [{
-          label: "Patients",
-          data: screeningRows.map((r) => r[1]),
-          backgroundColor: "lightblue",
-        }],
+        labels: screeningDataRows.map((r) => r[0]),
+        datasets: [
+          {
+            label: "No of Patients",
+            data: screeningDataRows.map((r) => r[1]),
+            backgroundColor: "lightblue",
+          },
+        ],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
           x: { title: { display: true, text: "Diagnosis" } },
-          y: { title: { display: true, text: "Number of Patients" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
@@ -259,24 +269,22 @@ exports.generateReport = async (req, res) => {
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
+        spacing: { line: 360 },                                   // Code 3 feature
         children: [
-          new ImageRun({
-            data: screeningChart,
-            transformation: { width: 500, height: 300 },
-          }),
+          new ImageRun({ data: screeningChart, transformation: { width: 500, height: 300 } }),
         ],
       })
     );
 
     children.push(new Paragraph({ children: [new PageBreak()] }));
 
-    // ================= PAGE 5 TREATMENT =================
+    // ── PAGE 5 – Treatment Statistics ───────────────────────────────────────
 
     let treatmentRows = [["Scaling", d.scaling || 0]];
 
     if (d.extraTreatment) {
-      const extra = JSON.parse(d.extraTreatment);
-      extra.forEach((item) => treatmentRows.push([item.name, item.value]));
+      const extraT = JSON.parse(d.extraTreatment);
+      extraT.forEach((item) => treatmentRows.push([item.name, item.value]));
     }
 
     const treatmentTable = new Table({
@@ -292,30 +300,30 @@ exports.generateReport = async (req, res) => {
         ...treatmentRows.map((row) =>
           new TableRow({
             children: row.map((val) =>
-              new TableCell({
-                children: [normalText(val, true)],
-              })
+              new TableCell({ children: [normalText(val, true)] })
             ),
           })
         ),
       ],
     });
 
+    // Code 3 chart options: no dataset label, y-axis "No of Patients"
     const treatmentChart = await generateChart({
       type: "bar",
       data: {
         labels: treatmentRows.map((r) => r[0]),
-        datasets: [{
-          label: "Patients",
-          data: treatmentRows.map((r) => r[1]),
-          backgroundColor: "lightblue",
-        }],
+        datasets: [
+          {
+            data: treatmentRows.map((r) => r[1]),
+            backgroundColor: "lightblue",
+          },
+        ],
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
           x: { title: { display: true, text: "Treatment" } },
-          y: { title: { display: true, text: "Number of Patients" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
@@ -328,15 +336,12 @@ exports.generateReport = async (req, res) => {
       new Paragraph({
         alignment: AlignmentType.CENTER,
         children: [
-          new ImageRun({
-            data: treatmentChart,
-            transformation: { width: 500, height: 300 },
-          }),
+          new ImageRun({ data: treatmentChart, transformation: { width: 500, height: 300 } }),
         ],
       })
     );
 
-    // ================= FOOTER =================
+    // ── Footer ───────────────────────────────────────────────────────────────
 
     const footer = new Footer({
       children: [
@@ -354,6 +359,8 @@ exports.generateReport = async (req, res) => {
       ],
     });
 
+    // ── Build document ───────────────────────────────────────────────────────
+
     const doc = new Document({
       sections: [
         {
@@ -365,15 +372,16 @@ exports.generateReport = async (req, res) => {
 
     const buffer = await Packer.toBuffer(doc);
 
-    const filename = "Camp_Report_" + Date.now() + ".docx";
+    // Code 4: timestamped filename + save to /tmp + DB log
+    const filename   = "Camp_Report_" + Date.now() + ".docx";
     const reportPath = path.join("/tmp/", filename);
-
     fs.writeFileSync(reportPath, buffer);
 
     await db.query(
-       "INSERT INTO reports(username,filename,created_date,created_time) VALUES($1,$2,CURRENT_DATE,CURRENT_TIME)",
-       [req.session.user, filename]
-    )
+      "INSERT INTO reports(username, filename, created_date, created_time) VALUES($1, $2, CURRENT_DATE, CURRENT_TIME)",
+      [req.session.user, filename]
+    );
+
     res.setHeader("Content-Disposition", "attachment; filename=" + filename);
     res.send(buffer);
 
