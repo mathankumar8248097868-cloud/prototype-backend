@@ -134,6 +134,21 @@ app.get("/api/admin/reports", async (req, res) => {
   }
 })
 
+// ================= DELETE REPORT =================
+
+app.delete("/api/admin/reports/delete", async (req, res) => {
+  if (!req.session.admin) return res.status(403).send("Not allowed")
+  const { filename } = req.query
+  if (!filename) return res.status(400).json({ success: false, message: "Filename required" })
+  try {
+    await db.query("DELETE FROM reports WHERE filename=$1", [filename])
+    res.json({ success: true })
+  } catch (err) {
+    console.log(err)
+    res.json({ success: false })
+  }
+})
+
 // ================= PROTECT REPORT PAGE =================
 
 app.get("/report", (req, res) => {
@@ -164,6 +179,7 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, "../frontend"), { index: false }))
 app.use("/reports", express.static("/tmp"))
+
 // ================= START SERVER =================
 
 const PORT = process.env.PORT || 5000
