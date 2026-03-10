@@ -166,29 +166,15 @@ exports.generateReport = async (req, res) => {
       data: {
         labels: ["Male", "Female"],
         datasets: [{
-          label: "",
           data: [parseInt(d.maleCount), parseInt(d.femaleCount)],
           backgroundColor: "lightblue",
         }],
       },
       options: {
-        plugins: {
-          legend: { display: false },
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          x: {
-            title: {
-              display: true,
-              text: "Gender",
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: "No of Patients",
-              rotation: -90,
-            },
-          },
+          x: { title: { display: true, text: "Gender" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
@@ -251,29 +237,15 @@ exports.generateReport = async (req, res) => {
       data: {
         labels: screeningRows.map((r) => r[0]),
         datasets: [{
-          label: "",
           data: screeningRows.map((r) => r[1]),
           backgroundColor: "lightblue",
         }],
       },
       options: {
-        plugins: {
-          legend: { display: false },
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          x: {
-            title: {
-              display: true,
-              text: "Diagnosis",
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: "No of Patients",
-              rotation: -90,
-            },
-          },
+          x: { title: { display: true, text: "Diagnosis" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
@@ -332,29 +304,15 @@ exports.generateReport = async (req, res) => {
       data: {
         labels: treatmentRows.map((r) => r[0]),
         datasets: [{
-          label: "",
           data: treatmentRows.map((r) => r[1]),
           backgroundColor: "lightblue",
         }],
       },
       options: {
-        plugins: {
-          legend: { display: false },
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          x: {
-            title: {
-              display: true,
-              text: "Treatment",
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: "No of Patients",
-              rotation: -90,
-            },
-          },
+          x: { title: { display: true, text: "Treatment" } },
+          y: { title: { display: true, text: "No of Patients" } },
         },
       },
     });
@@ -409,7 +367,10 @@ exports.generateReport = async (req, res) => {
 
     fs.writeFileSync(reportPath, buffer);
 
-    await db.query( "INSERT INTO reports(username, filename, created_date, created_time) VALUES($1,$2,CURRENT_DATE,CURRENT_TIME)", [req.session.user, filename] );
+    await db.query(
+      "INSERT INTO reports(username, filename, created_date, created_time) VALUES($1,$2,CURRENT_DATE,CURRENT_TIME)",
+      [req.session.user, filename]
+    );
 
     res.setHeader("Content-Disposition", "attachment; filename=" + filename);
     res.send(buffer);
