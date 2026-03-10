@@ -15,8 +15,7 @@ client.connect()
   .then(async () => {
     console.log("PostgreSQL Connected")
 
-    await client.query("DROP TABLE IF EXISTS reports")
-    await client.query("DROP TABLE IF EXISTS users")
+    
 
     const usersTable = `
       CREATE TABLE IF NOT EXISTS users (
