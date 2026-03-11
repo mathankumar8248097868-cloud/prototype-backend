@@ -62,6 +62,32 @@ app.post("/api/admin/login", (req, res) => {
   }
 })
 
+// ================= SESSION CHECK — USER =================
+
+app.get("/api/auth/check", (req, res) => {
+  res.json({ loggedIn: !!req.session.user })
+})
+
+// ================= SESSION CHECK — ADMIN =================
+
+app.get("/api/auth/admin/check", (req, res) => {
+  res.json({ loggedIn: !!req.session.admin })
+})
+
+// ================= LOGOUT — USER =================
+
+app.post("/api/logout", (req, res) => {
+  req.session.destroy()
+  res.json({ success: true })
+})
+
+// ================= LOGOUT — ADMIN =================
+
+app.post("/api/admin/logout", (req, res) => {
+  req.session.destroy()
+  res.json({ success: true })
+})
+
 // ================= ADMIN CREATE USER =================
 
 app.post("/api/admin/adduser", async (req, res) => {
@@ -127,8 +153,9 @@ app.put("/api/admin/edit/:id", async (req, res) => {
 app.get("/api/admin/reports", async (req, res) => {
   if (!req.session.admin) return res.status(403).send("Not allowed")
   try {
-    // Do NOT select file_data here — too heavy for list view
-    const result = await db.query("SELECT id, username, filename, created_date, created_time FROM reports")
+    const result = await db.query(
+      "SELECT id, username, filename, created_date, created_time FROM reports"
+    )
     res.json(result.rows)
   } catch (err) {
     console.log(err)
@@ -137,7 +164,6 @@ app.get("/api/admin/reports", async (req, res) => {
 })
 
 // ================= DOWNLOAD REPORT FROM DATABASE =================
-// File is stored as BYTEA in the DB — survives server restarts forever.
 
 app.get("/api/admin/reports/download", async (req, res) => {
   if (!req.session.admin) return res.status(403).send("Not allowed")
@@ -174,7 +200,6 @@ app.delete("/api/admin/reports/delete", async (req, res) => {
   const { filename } = req.query
   if (!filename) return res.status(400).json({ success: false, message: "Filename required" })
   try {
-    // Deletes from DB — file_data deleted too
     await db.query("DELETE FROM reports WHERE filename=$1", [filename])
     res.json({ success: true })
   } catch (err) {
@@ -183,25 +208,11 @@ app.delete("/api/admin/reports/delete", async (req, res) => {
   }
 })
 
-// ================= PROTECT REPORT PAGE =================
-
-app.get("/report", (req, res) => {
-  if (!req.session.user) return res.redirect("/userlogin.html")
-  res.sendFile(path.join(__dirname, "../frontend/report.html"))
-})
-
-// ================= PROTECT ADMIN PAGE =================
-
-app.get("/admin", (req, res) => {
-  if (!req.session.admin) return res.redirect("/adminlogin.html")
-  res.sendFile(path.join(__dirname, "../frontend/adminpage.html"))
-})
-
 // ================= REPORT API =================
 
 app.use("/api/report", reportRoutes)
 
-// ================= BLOCK DIRECT ACCESS =================
+// ================= BLOCK DIRECT ACCESS TO PROTECTED HTML =================
 
 app.use((req, res, next) => {
   if (req.path === "/report.html") return res.redirect("/userlogin.html")
