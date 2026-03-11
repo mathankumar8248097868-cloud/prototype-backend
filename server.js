@@ -127,11 +127,43 @@ app.put("/api/admin/edit/:id", async (req, res) => {
 app.get("/api/admin/reports", async (req, res) => {
   if (!req.session.admin) return res.status(403).send("Not allowed")
   try {
-    const result = await db.query("SELECT * FROM reports")
+    // Do NOT select file_data here — too heavy for list view
+    const result = await db.query("SELECT id, username, filename, created_date, created_time FROM reports")
     res.json(result.rows)
   } catch (err) {
     console.log(err)
     res.json([])
+  }
+})
+
+// ================= DOWNLOAD REPORT FROM DATABASE =================
+// File is stored as BYTEA in the DB — survives server restarts forever.
+
+app.get("/api/admin/reports/download", async (req, res) => {
+  if (!req.session.admin) return res.status(403).send("Not allowed")
+  const { filename } = req.query
+  if (!filename) return res.status(400).send("Filename required")
+
+  try {
+    const result = await db.query(
+      "SELECT filename, file_data FROM reports WHERE filename=$1",
+      [filename]
+    )
+
+    if (result.rows.length === 0 || !result.rows[0].file_data) {
+      return res.status(404).send("File not found in database.")
+    }
+
+    const { file_data } = result.rows[0]
+    const safeName = path.basename(filename)
+
+    res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`)
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    res.send(file_data)
+
+  } catch (err) {
+    console.log(err)
+    res.status(500).send("Error retrieving file")
   }
 })
 
@@ -142,37 +174,13 @@ app.delete("/api/admin/reports/delete", async (req, res) => {
   const { filename } = req.query
   if (!filename) return res.status(400).json({ success: false, message: "Filename required" })
   try {
+    // Deletes from DB — file_data deleted too
     await db.query("DELETE FROM reports WHERE filename=$1", [filename])
-    // Also delete the file from /tmp if it still exists
-    const filepath = path.join("/tmp", filename)
-    if (fs.existsSync(filepath)) fs.unlinkSync(filepath)
     res.json({ success: true })
   } catch (err) {
     console.log(err)
     res.json({ success: false })
   }
-})
-
-// ================= DOWNLOAD REPORT (FIXED) =================
-// This replaces the broken express.static("/tmp") approach.
-// It checks the file exists and sets correct headers for download.
-
-app.get("/api/admin/reports/download", async (req, res) => {
-  if (!req.session.admin) return res.status(403).send("Not allowed")
-  const { filename } = req.query
-  if (!filename) return res.status(400).send("Filename required")
-
-  // Sanitize filename — prevent path traversal attacks
-  const safeName = path.basename(filename)
-  const filepath = path.join("/tmp", safeName)
-
-  if (!fs.existsSync(filepath)) {
-    return res.status(404).send("File not found. The server may have restarted and cleared the file. Please regenerate the report.")
-  }
-
-  res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`)
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-  res.sendFile(filepath)
 })
 
 // ================= PROTECT REPORT PAGE =================
@@ -204,7 +212,6 @@ app.use((req, res, next) => {
 // ================= STATIC FILES =================
 
 app.use(express.static(path.join(__dirname, "../frontend"), { index: false }))
-// NOTE: Removed express.static("/tmp") — use /api/admin/reports/download instead
 
 // ================= START SERVER =================
 
