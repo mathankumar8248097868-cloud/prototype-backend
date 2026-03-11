@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard — Ultra Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+:root{ --blue1:#4facfe; --blue2:#00c6ff; --dark:#1a2340; }
+body{ background:linear-gradient(135deg,var(--dark),#2a3a60); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+#gate{ text-align:center; color:white; }
+.spinner{ width:52px; height:52px; border:4px solid rgba(255,255,255,0.15); border-top-color:var(--blue1); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 20px; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+#gate p{ font-size:13px; opacity:0.4; letter-spacing:2px; text-transform:uppercase; }
+#app{ display:none; }
+body.ready{ background:linear-gradient(135deg,var(--blue1),var(--blue2)); display:block; }
+#app{ display:flex !important; flex-direction:column; min-height:100vh; }
+</style>
+</head>
+<body>
+
+<!-- BLANK PAGE — no admin content exists in HTML source at all -->
+<div id="gate">
+  <div class="spinner"></div>
+  <p>Verifying Access…</p>
+</div>
+<div id="app"></div>
+
+<script>
+const BASE = "https://prototype-backend-657r.onrender.com";
+
+// Auth check — if not admin, redirect immediately. Page HTML has NO content.
+// fetchWithTimeout: always redirect if server is slow/down (free Render tier wakes slowly)
+function fetchWithTimeout(url, opts, ms = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...opts, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+
+(async function boot() {
+  try {
+    const res = await fetchWithTimeout(BASE + "/api/auth/admin/check", { credentials: "include" }, 8000);
+    if (!res.ok) { window.location.replace("adminlogin.html"); return; }
+    const data = await res.json();
+    if (!data.loggedIn) { window.location.replace("adminlogin.html"); return; }
+  } catch (e) {
+    // Network error, timeout, or server down — always block access
+    window.location.replace("adminlogin.html");
+    return;
+  }
+
+  // Only reaches here if session is valid admin
+  document.getElementById("gate").remove();
+  document.body.className = "ready";
+  const app = document.getElementById("app");
+  app.style.display = "flex";
+
+  app.innerHTML = `
+    <style>
+      header{ background:var(--dark); padding:0 36px; display:flex; align-items:center; justify-content:space-between; height:64px; box-shadow:0 4px 24px rgba(0,0,0,0.35); position:sticky; top:0; z-index:200; }
+      .logo{ display:flex; align-items:center; gap:10px; cursor:pointer; }
+      .logo-icon{ width:38px; height:38px; background:linear-gradient(135deg,var(--blue1),var(--blue2)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+      .logo-text{ font-family:'Playfair Display',serif; color:white; font-size:16px; line-height:1.1; }
+      .logo-text span{ display:block; font-size:10px; font-weight:300; color:rgba(255,255,255,0.45); letter-spacing:2px; text-transform:uppercase; }
+      .nav-link{ padding:8px 15px; border:none; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; background:transparent; color:rgba(255,255,255,0.55); text-decoration:none; }
+      .nav-link:hover{ background:rgba(255,255,255,0.1); color:white; }
+      .nav-divider{ width:1px; height:22px; background:rgba(255,255,255,0.12); margin:0 4px; display:inline-block; vertical-align:middle; }
+      .logout-btn{ padding:8px 15px; border:1px solid rgba(255,80,80,0.4); border-radius:8px; font-size:13px; cursor:pointer; background:transparent; color:rgba(255,120,120,0.8); }
+      .logout-btn:hover{ background:rgba(255,80,80,0.15); color:#ff6b6b; }
+      .page{ padding:36px; flex:1; }
+      .container{ background:white; border-radius:16px; padding:32px; max-width:940px; margin:auto; box-shadow:0 20px 60px rgba(0,0,0,0.18); }
+      .page-title{ font-family:'Playfair Display',serif; font-size:22px; color:var(--dark); margin-bottom:24px; padding-bottom:14px; border-bottom:2px solid #f0f4ff; }
+      .sec{ margin-top:28px; color:#888; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin-bottom:8px; }
+      .form-group{ display:flex; gap:10px; flex-wrap:wrap; }
+      .form-group input{ flex:1; padding:11px 14px; border-radius:9px; border:1.5px solid #e0e7ff; font-size:14px; outline:none; font-family:'Poppins',sans-serif; }
+      .form-group input:focus{ border-color:var(--blue1); }
+      .add-btn{ padding:11px 22px; background:linear-gradient(135deg,var(--blue1),var(--blue2)); color:white; border:none; border-radius:9px; cursor:pointer; font-weight:600; font-size:13px; }
+      .add-btn:hover{ opacity:0.88; }
+      .table-wrapper{ overflow-x:auto; margin-top:10px; border-radius:10px; border:1px solid #eef2ff; overflow:hidden; }
+      table{ width:100%; border-collapse:collapse; min-width:540px; }
+      thead{ background:linear-gradient(90deg,var(--dark),#2a3a60); }
+      th{ padding:12px 10px; font-size:11px; font-weight:600; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.6px; }
+      td{ padding:11px 10px; text-align:center; border-bottom:1px solid #f0f4ff; font-size:13px; color:#555; }
+      tr:last-child td{ border-bottom:none; }
+      tr:hover td{ background:#f8fbff; }
+      .edit-btn{ background:#ff9f1a; color:white; border:none; padding:5px 11px; border-radius:6px; cursor:pointer; font-size:12px; margin:2px; }
+      .delete-btn{ background:#ff4757; color:white; border:none; padding:5px 11px; border-radius:6px; cursor:pointer; font-size:12px; margin:2px; }
+      .download-btn{ background:#2ed573; color:white; border:none; padding:5px 11px; border-radius:6px; cursor:pointer; font-size:12px; }
+      footer{ background:var(--dark); color:rgba(255,255,255,0.45); padding:18px 36px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+      .footer-left{ font-size:13px; display:flex; align-items:center; gap:8px; }
+      .footer-left strong{ color:var(--blue1); font-weight:600; }
+      .footer-right{ display:flex; gap:18px; }
+      .footer-right a{ color:rgba(255,255,255,0.35); text-decoration:none; font-size:12px; transition:color 0.2s; }
+      .footer-right a:hover{ color:var(--blue1); }
+    </style>
+
+    <header>
+      <div class="logo" onclick="location.href='https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html'">
+        <div class="logo-icon">🦷</div>
+        <div class="logo-text">Ultra Report <span>Dental Camp System</span></div>
+      </div>
+      <nav style="display:flex;gap:4px;align-items:center">
+        <a class="nav-link" href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">🏠 Home</a>
+        <span class="nav-divider"></span>
+        <button class="logout-btn" onclick="doLogout()">⏏ Logout</button>
+      </nav>
+    </header>
+
+    <div class="page">
+      <div class="container">
+        <div class="page-title">🛡️ Admin Dashboard</div>
+
+        <div class="sec">➕ Add New User</div>
+        <div class="form-group">
+          <input id="newUser" placeholder="Username">
+          <input id="newPass" type="password" placeholder="Password">
+          <button class="add-btn" onclick="addUser()">Add User</button>
+        </div>
+
+        <div class="sec">👥 User List</div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>No</th><th>Username</th><th>Password</th><th>Action</th></tr></thead>
+            <tbody id="userTable"></tbody>
+          </table>
+        </div>
+
+        <div class="sec">📄 Generated Reports</div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>No</th><th>User</th><th>Document</th><th>Date</th><th>Time</th><th>Download</th><th>Delete</th></tr></thead>
+            <tbody id="reportTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-left"><span style="width:6px;height:6px;background:var(--blue1);border-radius:50%;display:inline-block;flex-shrink:0"></span>&nbsp;© 2026 <strong>Ultra College</strong> — Dental Camp Report System</div>
+      <div class="footer-right">
+        <a href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">Home</a>
+        <a href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/userlogin.html">User Login</a>
+        <a href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/adminlogin.html">Admin Login</a>
+      </div>
+    </footer>
+  `;
+
+  loadUsers();
+  loadReports();
+})();
+
+// ── Format helpers ────────────────────────────────────────────────────────────
+function formatDate(raw) {
+  if (!raw) return "-";
+  const d = new Date(raw);
+  if (isNaN(d)) return raw;
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const yyyy = d.getUTCFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+}
+
+function formatTime(raw) {
+  if (!raw) return "-";
+  const parts = String(raw).split(":");
+  if (parts.length >= 2) {
+    const hh = parts[0].padStart(2, "0");
+    const min = parts[1].padStart(2, "0");
+    const secRaw = parts[2] ? parts[2].split(".")[0].padStart(2, "0") : "00";
+    const h = parseInt(hh);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const h12 = String(h % 12 || 12).padStart(2, "0");
+    return `${h12}:${min}:${secRaw} ${ampm}`;
+  }
+  return raw;
+}
+
+async function doLogout() {
+  await fetch(BASE + "/api/admin/logout", { method: "POST", credentials: "include" });
+  window.location.replace("adminlogin.html");
+}
+
+// Every API call checks for 403 and redirects — so even if session expires mid-use
+async function apiFetch(url, opts) {
+  const res = await fetch(BASE + url, { credentials: "include", ...opts });
+  if (res.status === 403) { window.location.replace("adminlogin.html"); throw new Error("Session expired"); }
+  return res;
+}
+
+async function loadUsers() {
+  const res = await apiFetch("/api/admin/users");
+  const users = await res.json();
+  const t = document.getElementById("userTable"); t.innerHTML = "";
+  users.forEach((u, i) => {
+    t.innerHTML += `<tr><td>${i+1}</td><td>${u.username}</td><td>${u.password}</td><td>
+      <button class="edit-btn" onclick="editUser(${u.id})">Edit</button>
+      <button class="delete-btn" onclick="delUser(${u.id})">Delete</button></td></tr>`;
+  });
+}
+
+async function addUser() {
+  const username = document.getElementById("newUser").value.trim();
+  const password = document.getElementById("newPass").value.trim();
+  if (!username || !password) { alert("Fill both fields"); return; }
+  const res = await apiFetch("/api/admin/adduser", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({username,password}) });
+  const data = await res.json();
+  if (data.success) { document.getElementById("newUser").value=""; document.getElementById("newPass").value=""; loadUsers(); }
+  else alert("Error adding user");
+}
+
+async function delUser(id) {
+  if (!confirm("Delete this user?")) return;
+  await apiFetch("/api/admin/delete/"+id, { method:"DELETE" });
+  loadUsers();
+}
+
+async function editUser(id) {
+  const username = prompt("New Username"); if (!username) return;
+  const password = prompt("New Password"); if (!password) return;
+  await apiFetch("/api/admin/edit/"+id, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({username,password}) });
+  loadUsers();
+}
+
+async function loadReports() {
+  const res = await apiFetch("/api/admin/reports");
+  const reports = await res.json();
+  const t = document.getElementById("reportTable"); t.innerHTML = "";
+  reports.forEach((r, i) => {
+    t.innerHTML += `<tr><td>${i+1}</td><td>${r.username}</td><td>${r.filename}</td>
+      <td>${formatDate(r.created_date)}</td><td>${formatTime(r.created_time)}</td>
+      <td><button class="download-btn" onclick="dlReport('${r.filename}')">⬇ Download</button></td>
+      <td><button class="delete-btn" onclick="delReport('${r.filename}')">Delete</button></td></tr>`;
+  });
+}
+
+async function dlReport(filename) {
+  const res = await apiFetch("/api/admin/reports/download?filename="+encodeURIComponent(filename));
+  if (!res.ok) { alert("Download failed"); return; }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+async function delReport(filename) {
+  if (!confirm("Delete this report?")) return;
+  await apiFetch("/api/admin/reports/delete?filename="+encodeURIComponent(filename), { method:"DELETE" });
+  loadReports();
+}
+</script>
+</body>
+</html>
