@@ -2,6 +2,7 @@ const express = require("express")
 const cors = require("cors")
 const path = require("path")
 const session = require("express-session")
+const fs = require("fs")
 
 const reportRoutes = require("./routes/reportRoutes")
 const db = require("./config/db")
@@ -142,11 +143,36 @@ app.delete("/api/admin/reports/delete", async (req, res) => {
   if (!filename) return res.status(400).json({ success: false, message: "Filename required" })
   try {
     await db.query("DELETE FROM reports WHERE filename=$1", [filename])
+    // Also delete the file from /tmp if it still exists
+    const filepath = path.join("/tmp", filename)
+    if (fs.existsSync(filepath)) fs.unlinkSync(filepath)
     res.json({ success: true })
   } catch (err) {
     console.log(err)
     res.json({ success: false })
   }
+})
+
+// ================= DOWNLOAD REPORT (FIXED) =================
+// This replaces the broken express.static("/tmp") approach.
+// It checks the file exists and sets correct headers for download.
+
+app.get("/api/admin/reports/download", async (req, res) => {
+  if (!req.session.admin) return res.status(403).send("Not allowed")
+  const { filename } = req.query
+  if (!filename) return res.status(400).send("Filename required")
+
+  // Sanitize filename — prevent path traversal attacks
+  const safeName = path.basename(filename)
+  const filepath = path.join("/tmp", safeName)
+
+  if (!fs.existsSync(filepath)) {
+    return res.status(404).send("File not found. The server may have restarted and cleared the file. Please regenerate the report.")
+  }
+
+  res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`)
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+  res.sendFile(filepath)
 })
 
 // ================= PROTECT REPORT PAGE =================
@@ -178,7 +204,7 @@ app.use((req, res, next) => {
 // ================= STATIC FILES =================
 
 app.use(express.static(path.join(__dirname, "../frontend"), { index: false }))
-app.use("/reports", express.static("/tmp"))
+// NOTE: Removed express.static("/tmp") — use /api/admin/reports/download instead
 
 // ================= START SERVER =================
 
