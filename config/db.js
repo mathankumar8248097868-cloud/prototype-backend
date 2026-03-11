@@ -1,48 +1,47 @@
-const { Client } = require("pg")
+const { Pool } = require("pg")
 
-const client = new Client({
-  host: process.env.PGHOST,
-  user: process.env.PGUSER,
-  password: process.env.PGPASSWORD,
-  database: process.env.PGDATABASE,
-  port: process.env.PGPORT,
-  ssl: {
-    rejectUnauthorized: false
-  }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 })
 
-client.connect()
-  .then(async () => {
+pool.connect()
+  .then(async (client) => {
     console.log("PostgreSQL Connected")
 
-    
-
-    const usersTable = `
+    // Users table
+    await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        username VARCHAR(50),
-        password VARCHAR(50),
+        username VARCHAR(100),
+        password VARCHAR(100),
         created_date DATE,
         created_time TIME
       )
-    `
-    await client.query(usersTable)
+    `)
     console.log("Users table created")
 
-    const reportsTable = `
+    // Reports table — includes file_data column for persistent storage
+    await client.query(`
       CREATE TABLE IF NOT EXISTS reports (
         id SERIAL PRIMARY KEY,
-        username VARCHAR(50),
+        username VARCHAR(100),
         filename VARCHAR(255),
+        file_data BYTEA,
         created_date DATE,
         created_time TIME
       )
-    `
-    await client.query(reportsTable)
+    `)
     console.log("Reports table created")
-  })
-  .catch(err => {
-    console.log("Database connection error:", err)
-  })
 
-module.exports = client
+    // If reports table already existed WITHOUT file_data, add the column safely
+    await client.query(`
+      ALTER TABLE reports ADD COLUMN IF NOT EXISTS file_data BYTEA
+    `)
+    console.log("file_data column verified")
+
+    client.release()
+  })
+  .catch((err) => console.log("DB Error:", err))
+
+module.exports = pool
