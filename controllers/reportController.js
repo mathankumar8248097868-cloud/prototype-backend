@@ -173,20 +173,21 @@ exports.generateReport = async (req, res) => {
       },
       options: {
         plugins: {
-          legend: { display: false },
+          legend: { display: false },       // ✅ Remove blue legend box
         },
         scales: {
           x: {
             title: {
               display: true,
-              text: "Gender",
+              text: "Gender",               // ✅ X-axis label
+              font: { size: 14 },
             },
           },
           y: {
             title: {
               display: true,
-              text: "No of Patients",
-              rotation: -90,
+              text: "No of Patients",       // ✅ Y-axis label
+              font: { size: 14 },
             },
           },
         },
@@ -258,20 +259,21 @@ exports.generateReport = async (req, res) => {
       },
       options: {
         plugins: {
-          legend: { display: false },
+          legend: { display: false },       // ✅ Remove blue legend box
         },
         scales: {
           x: {
             title: {
               display: true,
-              text: "Diagnosis",
+              text: "Diagnosis",            // ✅ X-axis label
+              font: { size: 14 },
             },
           },
           y: {
             title: {
               display: true,
-              text: "No of Patients",
-              rotation: -90,
+              text: "No of Patients",       // ✅ Y-axis label
+              font: { size: 14 },
             },
           },
         },
@@ -339,20 +341,21 @@ exports.generateReport = async (req, res) => {
       },
       options: {
         plugins: {
-          legend: { display: false },
+          legend: { display: false },       // ✅ Remove blue legend box
         },
         scales: {
           x: {
             title: {
               display: true,
-              text: "Treatment",
+              text: "Treatment",            // ✅ X-axis label
+              font: { size: 14 },
             },
           },
           y: {
             title: {
               display: true,
-              text: "No of Patients",
-              rotation: -90,
+              text: "No of Patients",       // ✅ Y-axis label
+              font: { size: 14 },
             },
           },
         },
