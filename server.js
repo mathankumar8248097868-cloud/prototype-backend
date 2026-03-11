@@ -169,24 +169,19 @@ app.get("/api/admin/reports/download", async (req, res) => {
   if (!req.session.admin) return res.status(403).send("Not allowed")
   const { filename } = req.query
   if (!filename) return res.status(400).send("Filename required")
-
   try {
     const result = await db.query(
       "SELECT filename, file_data FROM reports WHERE filename=$1",
       [filename]
     )
-
     if (result.rows.length === 0 || !result.rows[0].file_data) {
       return res.status(404).send("File not found in database.")
     }
-
     const { file_data } = result.rows[0]
     const safeName = path.basename(filename)
-
     res.setHeader("Content-Disposition", `attachment; filename="${safeName}"`)
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
     res.send(file_data)
-
   } catch (err) {
     console.log(err)
     res.status(500).send("Error retrieving file")
@@ -212,15 +207,28 @@ app.delete("/api/admin/reports/delete", async (req, res) => {
 
 app.use("/api/report", reportRoutes)
 
-// ================= BLOCK DIRECT ACCESS TO PROTECTED HTML =================
+// ================= PROTECTED PAGES (served by backend only) =================
+// The adminpage.html and report.html files must be placed in backend/protected/
+// They are NEVER served as static files — only through these guarded routes.
+// So even if someone knows the URL, the server returns a redirect, not the page.
 
-app.use((req, res, next) => {
-  if (req.path === "/report.html") return res.redirect("/userlogin.html")
-  if (req.path === "/adminpage.html") return res.redirect("/adminlogin.html")
-  next()
+app.get("/page/admin", (req, res) => {
+  if (!req.session.admin) {
+    // Not logged in — redirect to login page on GitHub Pages
+    return res.redirect("https://mathankumar8248097868-cloud.github.io/prototype-frontend/adminlogin.html")
+  }
+  res.sendFile(path.join(__dirname, "protected/adminpage.html"))
 })
 
-// ================= STATIC FILES =================
+app.get("/page/report", (req, res) => {
+  if (!req.session.user) {
+    // Not logged in — redirect to login page on GitHub Pages
+    return res.redirect("https://mathankumar8248097868-cloud.github.io/prototype-frontend/userlogin.html")
+  }
+  res.sendFile(path.join(__dirname, "protected/report.html"))
+})
+
+// ================= STATIC FILES (public pages only) =================
 
 app.use(express.static(path.join(__dirname, "../frontend"), { index: false }))
 
