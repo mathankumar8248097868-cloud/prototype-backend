@@ -53,6 +53,33 @@ async function generateChart(labels, data, xLabel, yLabel) {
   return Buffer.from(response.data);
 }
 
+async function generatePieChart(labels, data) {
+  const config = {
+    type: "pie",
+    data: {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: ["lightblue", "lightpink"],
+          borderColor: ["steelblue", "hotpink"],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      legend: { display: true },
+    },
+  };
+
+  const response = await axios.post(
+    "https://quickchart.io/chart",
+    { chart: config, width: 600, height: 400, backgroundColor: "white" },
+    { responseType: "arraybuffer" }
+  );
+  return Buffer.from(response.data);
+}
+
 exports.generateReport = async (req, res) => {
   try {
     const d = req.body;
@@ -126,7 +153,7 @@ exports.generateReport = async (req, res) => {
         new TableRow({ children: [new TableCell({ children: [normalText("Female", true)] }), new TableCell({ children: [normalText(d.femaleCount, true)] })] }),
       ],
     });
-    const campChart = await generateChart(["Male", "Female"], [parseInt(d.maleCount) || 0, parseInt(d.femaleCount) || 0], "Gender", "No of Patients");
+    const campChart = await generatePieChart(["Male", "Female"], [parseInt(d.maleCount) || 0, parseInt(d.femaleCount) || 0]);
     children.push(heading("Camp Statistics"));
     children.push(campTable);
     children.push(blank());
