@@ -1,142 +1,236 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title>Generate Report — Ultra Report</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
-:root{ --blue1:#4facfe; --blue2:#00c6ff; --dark:#1a2340; }
+*{ margin:0; padding:0; box-sizing:border-box; }
+:root{
+  --ink:#0d1117; --ink2:#1e2b3c;
+  --sky:#2563eb; --accent:#0ea5e9;
+  --silver:#f4f7fb; --muted:#64748b;
+  --white:#ffffff; --border:#e2e8f0;
+  --danger:#ef4444; --success:#10b981;
+}
+html,body{ height:100%; }
+body{ font-family:'DM Sans',sans-serif; background:var(--silver); color:var(--ink); min-height:100vh; display:flex; flex-direction:column; }
 
-html, body{ height:100%; }
-body{ background:#f0f4ff; min-height:100vh; display:flex; flex-direction:column; }
+/* HEADER */
+header{
+  position:sticky; top:0; z-index:500;
+  background:rgba(255,255,255,0.95); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 48px; height:68px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo{ display:flex; align-items:center; gap:12px; text-decoration:none; cursor:pointer; }
+.logo-mark{ width:40px; height:40px; background:linear-gradient(135deg,var(--sky),var(--accent)); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 4px 14px rgba(37,99,235,0.25); }
+.logo-name{ font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:var(--ink); }
+.logo-sub{ font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; display:block; margin-top:-2px; }
+nav{ display:flex; align-items:center; gap:6px; }
+.nav-pill{ padding:8px 18px; border-radius:100px; font-size:13px; font-weight:500; text-decoration:none; color:var(--muted); transition:all 0.2s; display:flex; align-items:center; gap:6px; background:transparent; border:1px solid transparent; cursor:pointer; }
+.nav-pill:hover{ color:var(--ink); background:var(--silver); }
+.nav-pill.active{ color:var(--sky); background:rgba(37,99,235,0.08); border-color:rgba(37,99,235,0.15); }
+.nav-sep{ width:1px; height:20px; background:var(--border); margin:0 6px; }
+.logout-btn{ padding:8px 18px; border-radius:100px; font-size:13px; font-weight:500; cursor:pointer; background:rgba(239,68,68,0.07); color:#ef4444; border:1px solid rgba(239,68,68,0.2); transition:all 0.2s; }
+.logout-btn:hover{ background:rgba(239,68,68,0.13); border-color:rgba(239,68,68,0.4); }
 
-/* ── HEADER ── */
-header{ background:var(--dark); padding:0 36px; display:flex; align-items:center; justify-content:space-between; height:64px; box-shadow:0 4px 24px rgba(0,0,0,0.35); position:sticky; top:0; z-index:200; flex-shrink:0; }
-.logo{ display:flex; align-items:center; gap:10px; cursor:pointer; text-decoration:none; }
-.logo-icon{ width:38px; height:38px; background:linear-gradient(135deg,var(--blue1),var(--blue2)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
-.logo-text{ font-family:'Playfair Display',serif; color:white; font-size:16px; line-height:1.1; }
-.logo-text span{ display:block; font-family:'Poppins',sans-serif; font-size:10px; font-weight:300; color:rgba(255,255,255,0.45); letter-spacing:2px; text-transform:uppercase; }
-nav{ display:flex; gap:4px; align-items:center; }
-.nav-link{ padding:8px 15px; border:none; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; background:transparent; color:rgba(255,255,255,0.55); text-decoration:none; display:flex; align-items:center; gap:6px; }
-.nav-link:hover{ background:rgba(255,255,255,0.1); color:white; }
-.nav-link.active{ background:rgba(79,172,254,0.18); color:var(--blue1); }
-.nav-divider{ width:1px; height:22px; background:rgba(255,255,255,0.12); margin:0 4px; }
-.logout-btn{ padding:8px 15px; border:1px solid rgba(255,80,80,0.4); border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; background:transparent; color:rgba(255,120,120,0.8); transition:all 0.2s; }
-.logout-btn:hover{ background:rgba(255,80,80,0.15); color:#ff6b6b; border-color:rgba(255,80,80,0.7); }
+/* PAGE */
+.page{ flex:1; padding:36px 48px; }
+.page-header{ margin-bottom:28px; }
+.page-header h1{ font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:700; color:var(--ink); letter-spacing:-0.5px; }
+.page-header p{ font-size:13px; color:var(--muted); margin-top:4px; }
 
-/* ── MAIN ── */
-.page{ padding:36px; flex:1; }
-.container{ background:white; border-radius:16px; padding:36px; max-width:860px; margin:auto; box-shadow:0 20px 60px rgba(0,0,0,0.10); }
-.page-title{ font-family:'Playfair Display',serif; font-size:22px; color:var(--dark); margin-bottom:28px; padding-bottom:14px; border-bottom:2px solid #f0f4ff; display:flex; align-items:center; gap:10px; }
-.section-label{ font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:#888; font-weight:600; margin:22px 0 8px; }
+/* FORM CARD */
+.form-card{
+  background:white; border-radius:20px;
+  padding:36px; max-width:900px; margin:auto;
+  box-shadow:0 4px 24px rgba(0,0,0,0.06);
+  border:1px solid var(--border);
+}
+
+/* SECTION DIVIDERS */
+.sec-label{
+  font-size:11px; font-weight:700;
+  text-transform:uppercase; letter-spacing:1.5px;
+  color:var(--muted);
+  margin:28px 0 12px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--silver);
+  display:flex; align-items:center; gap:8px;
+}
+.sec-label:first-child{ margin-top:0; }
+
+/* FIELDS */
 .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .grid-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
-.fi{ width:100%; padding:11px 14px; border-radius:9px; border:1.5px solid #e0e7ff; font-size:14px; font-family:'Poppins',sans-serif; outline:none; transition:border 0.2s; color:#333; box-sizing:border-box; }
-.fi:focus{ border-color:var(--blue1); }
-.add-btn{ padding:9px 18px; background:#f0f4ff; color:var(--dark); border:1.5px solid #d0d8f0; border-radius:8px; cursor:pointer; font-size:13px; font-weight:500; margin-top:8px; transition:0.2s; }
-.add-btn:hover{ background:#e0e8ff; }
-.extra-row{ display:flex; gap:10px; margin-top:8px; }
-.extra-row .fi{ flex:1; }
-.remove-btn{ padding:0 12px; background:#fff0f0; border:1.5px solid #ffd0d0; border-radius:8px; cursor:pointer; color:#ff4757; font-size:18px; font-weight:700; transition:0.2s; }
-.remove-btn:hover{ background:#ffe0e0; }
-.submit-btn{ width:100%; padding:15px; margin-top:28px; background:linear-gradient(135deg,var(--blue1),var(--blue2)); color:white; border:none; border-radius:11px; font-size:16px; font-weight:700; cursor:pointer; letter-spacing:0.3px; transition:0.3s; }
-.submit-btn:hover{ opacity:0.88; transform:translateY(-2px); box-shadow:0 10px 30px rgba(79,172,254,0.4); }
-.submit-btn:disabled{ opacity:0.6; cursor:not-allowed; transform:none; }
-#statusMsg{ margin-top:14px; text-align:center; font-size:14px; color:#2ed573; min-height:20px; font-weight:500; }
-#statusMsg.error{ color:#ff4757; }
+.fi{
+  width:100%; padding:11px 14px;
+  border-radius:9px;
+  border:1.5px solid var(--border);
+  font-size:14px; font-family:'DM Sans',sans-serif;
+  color:var(--ink); outline:none;
+  transition:all 0.2s; background:white;
+}
+.fi:focus{ border-color:var(--sky); box-shadow:0 0 0 3px rgba(37,99,235,0.07); }
+.fi::placeholder{ color:#b0bec5; }
+.fi[type="file"]{ padding:9px 14px; color:var(--muted); cursor:pointer; }
+.fi[type="file"]::-webkit-file-upload-button{
+  background:var(--silver); border:1px solid var(--border);
+  border-radius:6px; padding:5px 12px; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+  color:var(--ink); margin-right:10px;
+}
 
-/* ── FOOTER ── */
-footer{ background:var(--dark); color:rgba(255,255,255,0.45); padding:18px 36px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; flex-shrink:0; }
-.footer-left{ font-size:13px; display:flex; align-items:center; gap:8px; }
-.footer-left strong{ color:var(--blue1); font-weight:600; }
-.footer-dot{ width:6px; height:6px; background:var(--blue1); border-radius:50%; display:inline-block; flex-shrink:0; }
-.footer-right{ display:flex; gap:18px; }
-.footer-right a{ color:rgba(255,255,255,0.35); text-decoration:none; font-size:12px; transition:color 0.2s; }
-.footer-right a:hover{ color:var(--blue1); }
+/* EXTRA ROWS */
+.extra-row{ display:flex; gap:10px; margin-top:10px; }
+.extra-row .fi{ flex:1; }
+.btn-remove{
+  width:36px; height:36px; flex-shrink:0;
+  background:rgba(239,68,68,0.08);
+  border:1px solid rgba(239,68,68,0.2);
+  border-radius:9px; cursor:pointer;
+  color:var(--danger); font-size:18px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.15s; align-self:center;
+}
+.btn-remove:hover{ background:rgba(239,68,68,0.15); }
+.btn-add-row{
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:10px;
+  padding:8px 16px;
+  background:var(--silver);
+  border:1.5px dashed #cbd5e1;
+  border-radius:8px; cursor:pointer;
+  font-size:13px; font-weight:500; color:var(--muted);
+  transition:all 0.2s;
+}
+.btn-add-row:hover{ background:#eef2ff; border-color:#a5b4fc; color:var(--sky); }
+
+/* SUBMIT */
+.submit-btn{
+  width:100%; padding:16px; margin-top:28px;
+  background:linear-gradient(135deg,var(--sky),var(--accent));
+  color:white; border:none; border-radius:12px;
+  font-size:15px; font-weight:700; font-family:'DM Sans',sans-serif;
+  cursor:pointer; letter-spacing:0.3px;
+  transition:all 0.25s;
+  box-shadow:0 6px 22px rgba(37,99,235,0.28);
+}
+.submit-btn:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 10px 32px rgba(37,99,235,0.38); }
+.submit-btn:disabled{ opacity:0.6; cursor:not-allowed; transform:none; }
+#statusMsg{
+  margin-top:16px; text-align:center;
+  font-size:14px; font-weight:500; min-height:20px;
+  color:var(--success);
+}
+#statusMsg.error{ color:var(--danger); }
+
+/* FOOTER */
+footer{
+  background:var(--ink); color:rgba(255,255,255,0.4);
+  padding:18px 48px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:12px;
+}
+.footer-brand-name{ font-size:13px; color:rgba(255,255,255,0.7); font-weight:500; }
+.footer-brand-name strong{ color:var(--accent); }
+.footer-links{ display:flex; gap:20px; }
+.footer-links a{ color:rgba(255,255,255,0.3); text-decoration:none; font-size:12px; transition:color 0.2s; }
+.footer-links a:hover{ color:var(--accent); }
+
+@media(max-width:720px){
+  header{ padding:0 20px; }
+  .page{ padding:24px 16px; }
+  footer{ padding:16px 20px; }
+  .grid-2,.grid-3{ grid-template-columns:1fr; }
+}
 </style>
 </head>
 <body>
 
-<!-- ── HEADER ── -->
 <header>
   <a class="logo" href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">
-    <div class="logo-icon">🦷</div>
-    <div class="logo-text">Ultra Report <span>Dental Camp System</span></div>
+    <div class="logo-mark">🦷</div>
+    <div>
+      <div class="logo-name">Ultra Report</div>
+      <span class="logo-sub">Dental Camp System</span>
+    </div>
   </a>
   <nav>
-    <a class="nav-link" href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">🏠 Home</a>
-    <div class="nav-divider"></div>
-    <a class="nav-link active" href="#">📄 Report</a>
-    <div class="nav-divider"></div>
+    <a class="nav-pill" href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">Home</a>
+    <div class="nav-sep"></div>
+    <a class="nav-pill active" href="#">📄 Report</a>
+    <div class="nav-sep"></div>
     <button class="logout-btn" onclick="doLogout()">⏏ Logout</button>
   </nav>
 </header>
 
-<!-- ── FORM ── -->
 <div class="page">
-<div class="container">
-  <div class="page-title">📋 Generate Dental Camp Report</div>
-
-  <div class="section-label">Camp Details</div>
-  <div class="grid-2">
-    <input class="fi" id="collegeName" placeholder="College Name">
-    <input class="fi" id="departmentName" placeholder="Department Name">
-    <input class="fi" id="campLocation" placeholder="Camp Location">
-    <input class="fi" id="associationName" placeholder="Association Name">
-    <input class="fi" id="projectName" placeholder="Project Name">
-    <input class="fi" id="reportDateShort" placeholder="Short Date (e.g. 10/03/2026)">
-  </div>
-  <div style="margin-top:12px">
-    <input class="fi" id="reportDateLong" placeholder="Long Date (e.g. 10th March 2026)">
+  <div class="page-header">
+    <h1>📋 Generate Dental Camp Report</h1>
+    <p>Fill in the details below to create a formatted Word document report</p>
   </div>
 
-  <div class="section-label">Timings &amp; Team</div>
-  <div class="grid-3">
-    <input class="fi" id="startTime" placeholder="Start Time">
-    <input class="fi" id="endTime" placeholder="End Time">
-    <input class="fi" id="staffCount" placeholder="Staff Count">
-    <input class="fi" id="postgraduateCount" placeholder="Postgraduate Count">
-    <input class="fi" id="internCount" placeholder="Intern Count">
+  <div class="form-card">
+
+    <div class="sec-label">🏥 Camp Details</div>
+    <div class="grid-2">
+      <input class="fi" id="collegeName" placeholder="College Name">
+      <input class="fi" id="departmentName" placeholder="Department Name">
+      <input class="fi" id="campLocation" placeholder="Camp Location">
+      <input class="fi" id="associationName" placeholder="Association Name">
+      <input class="fi" id="projectName" placeholder="Project Name">
+      <input class="fi" id="reportDateShort" placeholder="Short Date (e.g. 10/03/2026)">
+    </div>
+    <div style="margin-top:12px">
+      <input class="fi" id="reportDateLong" placeholder="Long Date (e.g. 10th March 2026)">
+    </div>
+
+    <div class="sec-label">⏱️ Timings &amp; Team</div>
+    <div class="grid-3">
+      <input class="fi" id="startTime" placeholder="Start Time">
+      <input class="fi" id="endTime" placeholder="End Time">
+      <input class="fi" id="staffCount" placeholder="Staff Count">
+      <input class="fi" id="postgraduateCount" placeholder="Postgraduate Count">
+      <input class="fi" id="internCount" placeholder="Intern Count">
+    </div>
+
+    <div class="sec-label">🧑‍⚕️ Patient Summary</div>
+    <div class="grid-3">
+      <input class="fi" id="totalPatients" placeholder="Total Patients">
+      <input class="fi" id="treatmentCount" placeholder="Treatment Count">
+      <input class="fi" id="maleCount" placeholder="Male Count">
+      <input class="fi" id="femaleCount" placeholder="Female Count">
+    </div>
+
+    <div class="sec-label">🔬 Screening Statistics</div>
+    <div class="grid-3">
+      <input class="fi" id="dentalCaries" placeholder="Dental Caries">
+      <input class="fi" id="gingivitis" placeholder="Gingivitis">
+      <input class="fi" id="missing" placeholder="Missing">
+    </div>
+    <div id="extraScreening"></div>
+    <button class="btn-add-row" onclick="addScreening()">+ Add Diagnosis</button>
+
+    <div class="sec-label">💊 Treatment Statistics</div>
+    <input class="fi" id="scaling" placeholder="Scaling" style="margin-bottom:4px">
+    <div id="extraTreatment"></div>
+    <button class="btn-add-row" onclick="addTreatment()">+ Add Treatment</button>
+
+    <div class="sec-label">📷 Upload Photos</div>
+    <input class="fi" type="file" id="photos" multiple accept="image/*">
+
+    <button class="submit-btn" onclick="generate()" id="generateBtn">⚡ Generate Report</button>
+    <div id="statusMsg"></div>
+
   </div>
-
-  <div class="section-label">Patient Summary</div>
-  <div class="grid-3">
-    <input class="fi" id="totalPatients" placeholder="Total Patients">
-    <input class="fi" id="treatmentCount" placeholder="Treatment Count">
-    <input class="fi" id="maleCount" placeholder="Male Count">
-    <input class="fi" id="femaleCount" placeholder="Female Count">
-  </div>
-
-  <div class="section-label">Screening Statistics</div>
-  <div class="grid-3">
-    <input class="fi" id="dentalCaries" placeholder="Dental Caries">
-    <input class="fi" id="gingivitis" placeholder="Gingivitis">
-    <input class="fi" id="missing" placeholder="Missing">
-  </div>
-  <div id="extraScreening"></div>
-  <button class="add-btn" onclick="addScreening()">+ Add Diagnosis</button>
-
-  <div class="section-label">Treatment Statistics</div>
-  <input class="fi" id="scaling" placeholder="Scaling" style="margin-bottom:8px">
-  <div id="extraTreatment"></div>
-  <button class="add-btn" onclick="addTreatment()">+ Add Treatment</button>
-
-  <div class="section-label">Upload Photos</div>
-  <input class="fi" type="file" id="photos" multiple accept="image/*">
-
-  <button class="submit-btn" onclick="generate()" id="generateBtn">⚡ Generate Report</button>
-  <div id="statusMsg"></div>
 </div>
-</div>
 
-<!-- ── FOOTER ── -->
 <footer>
-  <div class="footer-left">
-    <span class="footer-dot"></span>
-    <span>© 2026 <strong>Ultra College</strong> — Dental Camp Report System</span>
-  </div>
-  <div class="footer-right">
+  <span class="footer-brand-name">© 2026 <strong>Ultra College</strong> — Dental Camp Report System</span>
+  <div class="footer-links">
     <a href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">Home</a>
     <a href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/adminlogin.html">Admin Login</a>
   </div>
@@ -154,21 +248,21 @@ async function doLogout() {
 function addScreening() {
   const div = document.createElement("div");
   div.className = "extra-row";
-  div.innerHTML = `<input class="fi" placeholder="Diagnosis Name" class="diagnosisName"><input class="fi" placeholder="Patient Count" class="diagnosisValue"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  div.innerHTML = `<input class="fi" placeholder="Diagnosis Name"><input class="fi" placeholder="Patient Count"><button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
   document.getElementById("extraScreening").appendChild(div);
 }
 
 function addTreatment() {
   const div = document.createElement("div");
   div.className = "extra-row";
-  div.innerHTML = `<input class="fi" placeholder="Treatment Name" class="treatmentName"><input class="fi" placeholder="Patient Count" class="treatmentValue"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  div.innerHTML = `<input class="fi" placeholder="Treatment Name"><input class="fi" placeholder="Patient Count"><button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
   document.getElementById("extraTreatment").appendChild(div);
 }
 
 async function generate() {
   const btn = document.getElementById("generateBtn");
   const msg = document.getElementById("statusMsg");
-  btn.disabled = true; btn.textContent = "⏳ Generating...";
+  btn.disabled = true; btn.textContent = "⏳ Generating…";
   msg.textContent = ""; msg.className = "";
 
   const get = (id) => document.getElementById(id)?.value || "";
