@@ -1,114 +1,179 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <title>Admin Dashboard — Ultra Report</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
-:root{ --blue1:#4facfe; --blue2:#00c6ff; --dark:#1a2340; }
+*{ margin:0; padding:0; box-sizing:border-box; }
+:root{
+  --ink:#0d1117; --ink2:#1e2b3c;
+  --sky:#2563eb; --accent:#0ea5e9;
+  --silver:#f4f7fb; --muted:#64748b;
+  --white:#ffffff; --border:#e2e8f0;
+  --danger:#ef4444; --success:#10b981; --warn:#f59e0b;
+}
+html,body{ height:100%; }
+body{ font-family:'DM Sans',sans-serif; background:var(--silver); color:var(--ink); min-height:100vh; display:flex; flex-direction:column; }
 
-html, body{ height:100%; }
-body{ background:linear-gradient(135deg,var(--blue1),var(--blue2)); min-height:100vh; display:flex; flex-direction:column; }
+/* HEADER */
+header{
+  position:sticky; top:0; z-index:500;
+  background:rgba(255,255,255,0.95); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 48px; height:68px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo{ display:flex; align-items:center; gap:12px; text-decoration:none; cursor:pointer; }
+.logo-mark{ width:40px; height:40px; background:linear-gradient(135deg,var(--sky),var(--accent)); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 4px 14px rgba(37,99,235,0.25); }
+.logo-name{ font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:var(--ink); }
+.logo-sub{ font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; display:block; margin-top:-2px; }
+nav{ display:flex; align-items:center; gap:6px; }
+.nav-pill{ padding:8px 18px; border-radius:100px; font-size:13px; font-weight:500; text-decoration:none; color:var(--muted); transition:all 0.2s; display:flex; align-items:center; gap:6px; background:transparent; border:1px solid transparent; cursor:pointer; }
+.nav-pill:hover{ color:var(--ink); background:var(--silver); }
+.nav-pill.active{ color:var(--sky); background:rgba(37,99,235,0.08); border-color:rgba(37,99,235,0.15); }
+.nav-sep{ width:1px; height:20px; background:var(--border); margin:0 6px; }
+.logout-btn{ padding:8px 18px; border-radius:100px; font-size:13px; font-weight:500; cursor:pointer; background:rgba(239,68,68,0.07); color:#ef4444; border:1px solid rgba(239,68,68,0.2); transition:all 0.2s; }
+.logout-btn:hover{ background:rgba(239,68,68,0.13); border-color:rgba(239,68,68,0.4); }
 
-/* ── HEADER ── */
-header{ background:var(--dark); padding:0 36px; display:flex; align-items:center; justify-content:space-between; height:64px; box-shadow:0 4px 24px rgba(0,0,0,0.35); position:sticky; top:0; z-index:200; flex-shrink:0; }
-.logo{ display:flex; align-items:center; gap:10px; cursor:pointer; text-decoration:none; }
-.logo-icon{ width:38px; height:38px; background:linear-gradient(135deg,var(--blue1),var(--blue2)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
-.logo-text{ font-family:'Playfair Display',serif; color:white; font-size:16px; line-height:1.1; }
-.logo-text span{ display:block; font-family:'Poppins',sans-serif; font-size:10px; font-weight:300; color:rgba(255,255,255,0.45); letter-spacing:2px; text-transform:uppercase; }
-nav{ display:flex; gap:4px; align-items:center; }
-.nav-link{ padding:8px 15px; border:none; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; background:transparent; color:rgba(255,255,255,0.55); text-decoration:none; display:flex; align-items:center; gap:6px; }
-.nav-link:hover{ background:rgba(255,255,255,0.1); color:white; }
-.nav-divider{ width:1px; height:22px; background:rgba(255,255,255,0.12); margin:0 4px; }
-.logout-btn{ padding:8px 15px; border:1px solid rgba(255,80,80,0.4); border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; background:transparent; color:rgba(255,120,120,0.8); transition:all 0.2s; }
-.logout-btn:hover{ background:rgba(255,80,80,0.15); color:#ff6b6b; border-color:rgba(255,80,80,0.7); }
+/* PAGE */
+.page{ flex:1; padding:36px 48px; }
+.page-header{ margin-bottom:32px; }
+.page-header h1{ font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:700; color:var(--ink); letter-spacing:-0.5px; }
+.page-header p{ font-size:13px; color:var(--muted); margin-top:4px; }
 
-/* ── MAIN ── */
-.page{ padding:36px; flex:1; }
-.container{ background:white; border-radius:16px; padding:32px; max-width:940px; margin:auto; box-shadow:0 20px 60px rgba(0,0,0,0.18); }
-.page-title{ font-family:'Playfair Display',serif; font-size:22px; color:var(--dark); margin-bottom:24px; padding-bottom:14px; border-bottom:2px solid #f0f4ff; display:flex; align-items:center; gap:10px; }
-.sec{ margin-top:28px; color:#888; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; font-weight:600; margin-bottom:8px; }
-.form-group{ display:flex; gap:10px; flex-wrap:wrap; }
-.form-group input{ flex:1; padding:11px 14px; border-radius:9px; border:1.5px solid #e0e7ff; font-size:14px; outline:none; font-family:'Poppins',sans-serif; transition:border 0.2s; }
-.form-group input:focus{ border-color:var(--blue1); }
-.add-btn{ padding:11px 22px; background:linear-gradient(135deg,var(--blue1),var(--blue2)); color:white; border:none; border-radius:9px; cursor:pointer; font-weight:600; font-size:13px; transition:0.2s; white-space:nowrap; }
-.add-btn:hover{ opacity:0.88; transform:translateY(-1px); }
-.table-wrapper{ width:100%; overflow-x:auto; margin-top:10px; border-radius:10px; overflow:hidden; border:1px solid #eef2ff; }
-table{ width:100%; border-collapse:collapse; min-width:540px; }
-thead{ background:linear-gradient(90deg,var(--dark),#2a3a60); }
-th{ padding:12px 10px; font-size:11px; font-weight:600; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.6px; white-space:nowrap; }
-td{ padding:11px 10px; text-align:center; border-bottom:1px solid #f0f4ff; font-size:13px; color:#555; }
-tr:last-child td{ border-bottom:none; }
-tr:hover td{ background:#f8fbff; }
-.edit-btn{ background:#ff9f1a; color:white; border:none; padding:5px 11px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; margin:2px; }
-.delete-btn{ background:#ff4757; color:white; border:none; padding:5px 11px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; margin:2px; }
-.download-btn{ background:#2ed573; color:white; border:none; padding:5px 11px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; }
+/* SECTION */
+.section{ background:white; border-radius:16px; padding:28px; margin-bottom:24px; border:1px solid var(--border); box-shadow:0 2px 12px rgba(0,0,0,0.04); }
+.section-head{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--silver); display:flex; align-items:center; gap:8px; }
 
-/* ── FOOTER ── */
-footer{ background:var(--dark); color:rgba(255,255,255,0.45); padding:18px 36px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; flex-shrink:0; }
-.footer-left{ font-size:13px; display:flex; align-items:center; gap:8px; }
-.footer-left strong{ color:var(--blue1); font-weight:600; }
-.footer-dot{ width:6px; height:6px; background:var(--blue1); border-radius:50%; display:inline-block; flex-shrink:0; }
-.footer-right{ display:flex; gap:18px; }
-.footer-right a{ color:rgba(255,255,255,0.35); text-decoration:none; font-size:12px; transition:color 0.2s; }
-.footer-right a:hover{ color:var(--blue1); }
+/* ADD USER FORM */
+.add-form{ display:flex; gap:10px; flex-wrap:wrap; }
+.add-form input{
+  flex:1; min-width:160px;
+  padding:11px 16px; border-radius:9px;
+  border:1.5px solid var(--border);
+  font-size:14px; font-family:'DM Sans',sans-serif;
+  color:var(--ink); outline:none;
+  transition:border 0.2s;
+}
+.add-form input:focus{ border-color:var(--sky); box-shadow:0 0 0 3px rgba(37,99,235,0.07); }
+.add-form input::placeholder{ color:#b0bec5; }
+.btn-add{
+  padding:11px 22px;
+  background:linear-gradient(135deg,var(--sky),var(--accent));
+  color:white; border:none; border-radius:9px;
+  font-size:13px; font-weight:600; font-family:'DM Sans',sans-serif;
+  cursor:pointer; white-space:nowrap;
+  transition:all 0.2s;
+  box-shadow:0 4px 14px rgba(37,99,235,0.25);
+}
+.btn-add:hover{ opacity:0.88; transform:translateY(-1px); }
+
+/* TABLE */
+.table-wrap{ width:100%; overflow-x:auto; border-radius:10px; border:1px solid var(--border); }
+table{ width:100%; border-collapse:collapse; min-width:500px; }
+thead tr{ background:var(--silver); }
+th{ padding:11px 14px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); white-space:nowrap; border-bottom:1px solid var(--border); }
+td{ padding:12px 14px; border-bottom:1px solid #f8fafc; font-size:13px; color:#374151; vertical-align:middle; }
+tbody tr:last-child td{ border-bottom:none; }
+tbody tr:hover td{ background:#fafbff; }
+.badge-user{ display:inline-block; padding:3px 10px; background:rgba(37,99,235,0.08); color:var(--sky); border-radius:100px; font-size:11px; font-weight:600; }
+.btn-sm{
+  padding:5px 12px;
+  border:none; border-radius:7px;
+  font-size:12px; font-weight:500; font-family:'DM Sans',sans-serif;
+  cursor:pointer; transition:all 0.15s;
+  margin:2px;
+}
+.btn-edit{ background:rgba(245,158,11,0.1); color:#d97706; }
+.btn-edit:hover{ background:rgba(245,158,11,0.2); }
+.btn-delete{ background:rgba(239,68,68,0.08); color:var(--danger); }
+.btn-delete:hover{ background:rgba(239,68,68,0.15); }
+.btn-download{ background:rgba(16,185,129,0.1); color:#059669; }
+.btn-download:hover{ background:rgba(16,185,129,0.18); }
+.empty-row td{ text-align:center; color:var(--muted); padding:28px; font-size:13px; }
+
+/* FOOTER */
+footer{
+  background:var(--ink); color:rgba(255,255,255,0.4);
+  padding:18px 48px;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:12px;
+}
+.footer-brand-name{ font-size:13px; color:rgba(255,255,255,0.7); font-weight:500; }
+.footer-brand-name strong{ color:var(--accent); }
+.footer-links{ display:flex; gap:20px; }
+.footer-links a{ color:rgba(255,255,255,0.3); text-decoration:none; font-size:12px; transition:color 0.2s; }
+.footer-links a:hover{ color:var(--accent); }
+
+@media(max-width:720px){
+  header{ padding:0 20px; }
+  .page{ padding:24px 20px; }
+  footer{ padding:16px 20px; }
+}
 </style>
 </head>
 <body>
 
-<!-- ── HEADER ── -->
 <header>
   <a class="logo" href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">
-    <div class="logo-icon">🦷</div>
-    <div class="logo-text">Ultra Report <span>Dental Camp System</span></div>
+    <div class="logo-mark">🦷</div>
+    <div>
+      <div class="logo-name">Ultra Report</div>
+      <span class="logo-sub">Dental Camp System</span>
+    </div>
   </a>
   <nav>
-    <a class="nav-link" href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">🏠 Home</a>
-    <div class="nav-divider"></div>
-    <a class="nav-link active" href="#">🛡️ Dashboard</a>
-    <div class="nav-divider"></div>
+    <a class="nav-pill" href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">Home</a>
+    <div class="nav-sep"></div>
+    <a class="nav-pill active" href="#">🛡️ Dashboard</a>
+    <div class="nav-sep"></div>
     <button class="logout-btn" onclick="doLogout()">⏏ Logout</button>
   </nav>
 </header>
 
-<!-- ── CONTENT ── -->
 <div class="page">
-  <div class="container">
-    <div class="page-title">🛡️ Admin Dashboard</div>
+  <div class="page-header">
+    <h1>🛡️ Admin Dashboard</h1>
+    <p>Manage users and generated reports</p>
+  </div>
 
-    <div class="sec">➕ Add New User</div>
-    <div class="form-group">
+  <!-- Add User -->
+  <div class="section">
+    <div class="section-head">➕ Add New User</div>
+    <div class="add-form">
       <input id="newUser" placeholder="Username">
       <input id="newPass" type="password" placeholder="Password">
-      <button class="add-btn" onclick="addUser()">Add User</button>
+      <button class="btn-add" onclick="addUser()">Add User</button>
     </div>
+  </div>
 
-    <div class="sec">👥 User List</div>
-    <div class="table-wrapper">
+  <!-- Users Table -->
+  <div class="section">
+    <div class="section-head">👥 User Accounts</div>
+    <div class="table-wrap">
       <table>
-        <thead><tr><th>No</th><th>Username</th><th>Password</th><th>Action</th></tr></thead>
-        <tbody id="userTable"></tbody>
+        <thead><tr><th>#</th><th>Username</th><th>Password</th><th>Actions</th></tr></thead>
+        <tbody id="userTable"><tr class="empty-row"><td colspan="4">Loading users…</td></tr></tbody>
       </table>
     </div>
+  </div>
 
-    <div class="sec">📄 Generated Reports</div>
-    <div class="table-wrapper">
+  <!-- Reports Table -->
+  <div class="section">
+    <div class="section-head">📄 Generated Reports</div>
+    <div class="table-wrap">
       <table>
-        <thead><tr><th>No</th><th>User</th><th>Document</th><th>Date</th><th>Time</th><th>Download</th><th>Delete</th></tr></thead>
-        <tbody id="reportTable"></tbody>
+        <thead><tr><th>#</th><th>User</th><th>Document</th><th>Date</th><th>Time</th><th>Download</th><th>Delete</th></tr></thead>
+        <tbody id="reportTable"><tr class="empty-row"><td colspan="7">Loading reports…</td></tr></tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- ── FOOTER ── -->
 <footer>
-  <div class="footer-left">
-    <span class="footer-dot"></span>
-    <span>© 2026 <strong>Ultra College</strong> — Dental Camp Report System</span>
-  </div>
-  <div class="footer-right">
+  <span class="footer-brand-name">© 2026 <strong>Ultra College</strong> — Dental Camp Report System</span>
+  <div class="footer-links">
     <a href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/index.html">Home</a>
     <a href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/userlogin.html">User Login</a>
     <a href="https://mathankumar8248097868-cloud.github.io/prototype-frontend/adminlogin.html">Admin Login</a>
@@ -119,7 +184,6 @@ footer{ background:var(--dark); color:rgba(255,255,255,0.45); padding:18px 36px;
 const BASE = "https://prototype-backend-657r.onrender.com";
 const GITHUB = "https://mathankumar8248097868-cloud.github.io/prototype-frontend";
 
-// Every API call checks for 403 — if session expires mid-use, redirect to login
 async function apiFetch(url, opts) {
   const res = await fetch(BASE + url, { credentials: "include", ...opts });
   if (res.status === 403) {
@@ -129,7 +193,6 @@ async function apiFetch(url, opts) {
   return res;
 }
 
-// ── Format helpers ────────────────────────────────────────────────────────────
 function formatDate(raw) {
   if (!raw) return "-";
   const d = new Date(raw);
@@ -163,18 +226,25 @@ async function doLogout() {
 async function loadUsers() {
   const res = await apiFetch("/api/admin/users");
   const users = await res.json();
-  const t = document.getElementById("userTable"); t.innerHTML = "";
+  const t = document.getElementById("userTable");
+  if (!users.length) { t.innerHTML = '<tr class="empty-row"><td colspan="4">No users found.</td></tr>'; return; }
+  t.innerHTML = "";
   users.forEach((u, i) => {
-    t.innerHTML += `<tr><td>${i+1}</td><td>${u.username}</td><td>${u.password}</td><td>
-      <button class="edit-btn" onclick="editUser(${u.id})">Edit</button>
-      <button class="delete-btn" onclick="delUser(${u.id})">Delete</button></td></tr>`;
+    t.innerHTML += `<tr>
+      <td>${i+1}</td>
+      <td><span class="badge-user">${u.username}</span></td>
+      <td>${u.password}</td>
+      <td>
+        <button class="btn-sm btn-edit" onclick="editUser(${u.id})">Edit</button>
+        <button class="btn-sm btn-delete" onclick="delUser(${u.id})">Delete</button>
+      </td></tr>`;
   });
 }
 
 async function addUser() {
   const username = document.getElementById("newUser").value.trim();
   const password = document.getElementById("newPass").value.trim();
-  if (!username || !password) { alert("Fill both fields"); return; }
+  if (!username || !password) { alert("Please fill both fields"); return; }
   const res = await apiFetch("/api/admin/adduser", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password })
@@ -206,12 +276,19 @@ async function editUser(id) {
 async function loadReports() {
   const res = await apiFetch("/api/admin/reports");
   const reports = await res.json();
-  const t = document.getElementById("reportTable"); t.innerHTML = "";
+  const t = document.getElementById("reportTable");
+  if (!reports.length) { t.innerHTML = '<tr class="empty-row"><td colspan="7">No reports found.</td></tr>'; return; }
+  t.innerHTML = "";
   reports.forEach((r, i) => {
-    t.innerHTML += `<tr><td>${i+1}</td><td>${r.username}</td><td>${r.filename}</td>
-      <td>${formatDate(r.created_date)}</td><td>${formatTime(r.created_time)}</td>
-      <td><button class="download-btn" onclick="dlReport('${r.filename}')">⬇ Download</button></td>
-      <td><button class="delete-btn" onclick="delReport('${r.filename}')">Delete</button></td></tr>`;
+    t.innerHTML += `<tr>
+      <td>${i+1}</td>
+      <td><span class="badge-user">${r.username}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.filename}</td>
+      <td>${formatDate(r.created_date)}</td>
+      <td>${formatTime(r.created_time)}</td>
+      <td><button class="btn-sm btn-download" onclick="dlReport('${r.filename}')">⬇ Download</button></td>
+      <td><button class="btn-sm btn-delete" onclick="delReport('${r.filename}')">Delete</button></td>
+    </tr>`;
   });
 }
 
@@ -231,7 +308,6 @@ async function delReport(filename) {
   loadReports();
 }
 
-// Load data on page start
 loadUsers();
 loadReports();
 </script>
