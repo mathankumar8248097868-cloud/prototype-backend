@@ -98,14 +98,13 @@ exports.generateReport = async (req, res) => {
     const photos = [];
     let logoFile = null;
 
-    // Separate logo from camp photos
+    // With upload.fields(), req.files is an object: { logo: [...], photos: [...] }
     if (req.files) {
-      for (const f of req.files) {
-        if (f.fieldname === "logo") {
-          logoFile = f;
-        } else {
-          photos.push(f);
-        }
+      if (req.files.logo && req.files.logo.length > 0) {
+        logoFile = req.files.logo[0];
+      }
+      if (req.files.photos && req.files.photos.length > 0) {
+        photos.push(...req.files.photos);
       }
     }
 
