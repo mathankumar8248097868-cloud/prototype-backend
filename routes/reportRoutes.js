@@ -5,31 +5,20 @@ const path = require("path")
 const fs = require("fs")
 const reportController = require("../controllers/reportController")
 
-// ── Create uploads folder if it doesn't exist ────────────────────────────────
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads")
-}
+if (!fs.existsSync("uploads")) fs.mkdirSync("uploads")
 
-// ── Multer storage config ─────────────────────────────────────────────────────
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/")
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "_" + file.fieldname + path.extname(file.originalname))
-  }
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename:    (req, file, cb) => cb(null, Date.now() + "_" + file.fieldname + path.extname(file.originalname))
 })
 
-const upload = multer({ storage: storage })
+const upload = multer({ storage })
 
-// Accept: logoLeft (single) + logoRight (single) + photos (multiple)
+// Only accept camp photos — logos come from server-side default files
 const uploadFields = upload.fields([
-  { name: "logoLeft",  maxCount: 1 },
-  { name: "logoRight", maxCount: 1 },
-  { name: "photos",    maxCount: 30 },
+  { name: "photos", maxCount: 30 },
 ])
 
-// ── Protect route — only logged-in users can generate reports ─────────────────
 router.post("/generate", (req, res, next) => {
   if (!req.session.user) return res.status(403).send("Not allowed")
   next()

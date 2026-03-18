@@ -232,24 +232,7 @@ footer{
     <div class="person-list" id="internList"></div>
     <button class="btn-add-row" onclick="addPerson('internList', 'Intern Name (e.g. Dr. Premalatha)')">+ Add Intern</button>
 
-    <!-- LOGO UPLOADS -->
-    <div class="sec-label">🖼️ College Logos <span style="font-size:10px;color:#94a3b8;font-weight:400;text-transform:none">(used on attendance page header)</span></div>
-    <div class="grid-2">
-      <div>
-        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Left Logo</div>
-        <input class="fi" type="file" id="logoLeft" accept="image/*" onchange="previewLogo(this,'previewLeft')">
-        <div id="previewLeft" style="margin-top:8px;display:none;text-align:center;">
-          <img style="width:80px;height:80px;object-fit:contain;border:1.5px solid var(--border);border-radius:10px;padding:4px;background:#fff;" alt="Left logo preview">
-        </div>
-      </div>
-      <div>
-        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Right Logo</div>
-        <input class="fi" type="file" id="logoRight" accept="image/*" onchange="previewLogo(this,'previewRight')">
-        <div id="previewRight" style="margin-top:8px;display:none;text-align:center;">
-          <img style="width:80px;height:80px;object-fit:contain;border:1.5px solid var(--border);border-radius:10px;padding:4px;background:#fff;" alt="Right logo preview">
-        </div>
-      </div>
-    </div>
+
 
     <!-- ═══ PAGE 3 — REPORT SUMMARY ═══ -->
     <div class="page-badge" style="margin-top:28px">📄 Page 3 — Camp Report Summary</div>
@@ -346,18 +329,6 @@ function collectPersonList(listId) {
 }
 
 // ── Generate ──────────────────────────────────────────────────────────────────
-function previewLogo(input, previewId) {
-  const wrap = document.getElementById(previewId);
-  const img  = wrap.querySelector("img");
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = (e) => { img.src = e.target.result; wrap.style.display = "block"; };
-    reader.readAsDataURL(input.files[0]);
-  } else {
-    wrap.style.display = "none";
-  }
-}
-
 async function generate() {
   const btn = document.getElementById("generateBtn");
   const msg = document.getElementById("statusMsg");
@@ -400,11 +371,7 @@ async function generate() {
   });
   if (extraTreatment.length) formData.append("extraTreatment", JSON.stringify(extraTreatment));
 
-  // Separate left and right logos
-  const logoLeftFile = document.getElementById("logoLeft").files[0];
-  if (logoLeftFile)  formData.append("logoLeft",  logoLeftFile);
-  const logoRightFile = document.getElementById("logoRight").files[0];
-  if (logoRightFile) formData.append("logoRight", logoRightFile);
+  // Logos are handled server-side from default files
 
   // Camp photos
   const photoFiles = document.getElementById("photos").files;
