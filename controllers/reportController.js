@@ -230,14 +230,12 @@ exports.generateReport = async (req, res) => {
         })
       );
 
-      // Page: 12240 wide, 1440 margins each side → content = 9360
-      // Table spans full page width via negative indent, logos hit true corners
-      const FULL_W   = 12240;
-      const MARGIN   = 1440;
-      const LOGO_COL = 1440;
-      const MID_COL  = FULL_W - LOGO_COL * 2; // 9360
+      // Content width = 9360 DXA (page 12240 - margins 1440*2)
+      // Logo columns tight beside the centre text — matches screenshot layout
+      const LOGO_COL = 1100;
+      const MID_COL  = 9360 - LOGO_COL * 2; // 7160
 
-      const leftCornerCell = new TableCell({
+      const leftLogoCell = new TableCell({
         borders: noBorders,
         width: { size: LOGO_COL, type: WidthType.DXA },
         verticalAlign: VerticalAlign.CENTER,
@@ -250,7 +248,7 @@ exports.generateReport = async (req, res) => {
         })],
       });
 
-      const rightCornerCell = new TableCell({
+      const rightLogoCell = new TableCell({
         borders: noBorders,
         width: { size: LOGO_COL, type: WidthType.DXA },
         verticalAlign: VerticalAlign.CENTER,
@@ -264,14 +262,13 @@ exports.generateReport = async (req, res) => {
       });
 
       return new Table({
-        alignment: AlignmentType.LEFT,
-        width: { size: FULL_W, type: WidthType.DXA },
-        indent: { size: -MARGIN, type: WidthType.DXA }, // break out of left margin
+        alignment: AlignmentType.CENTER,
+        width: { size: 9360, type: WidthType.DXA },
         columnWidths: [LOGO_COL, MID_COL, LOGO_COL],
         borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
         rows: [new TableRow({
           children: [
-            leftCornerCell,
+            leftLogoCell,
             new TableCell({
               borders: noBorders,
               width: { size: MID_COL, type: WidthType.DXA },
@@ -279,7 +276,7 @@ exports.generateReport = async (req, res) => {
               margins: { top: 0, bottom: 0, left: 0, right: 0 },
               children: centreChildren,
             }),
-            rightCornerCell,
+            rightLogoCell,
           ],
         })],
       });
