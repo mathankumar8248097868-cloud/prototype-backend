@@ -16,16 +16,22 @@ const storage = multer.diskStorage({
     cb(null, "uploads/")
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname))
+    cb(null, Date.now() + "_" + file.fieldname + path.extname(file.originalname))
   }
 })
 
 const upload = multer({ storage: storage })
 
+// Accept: logo (single) + photos (multiple)
+const uploadFields = upload.fields([
+  { name: "logo", maxCount: 1 },
+  { name: "photos", maxCount: 30 },
+])
+
 // ── Protect route — only logged-in users can generate reports ─────────────────
 router.post("/generate", (req, res, next) => {
   if (!req.session.user) return res.status(403).send("Not allowed")
   next()
-}, upload.array("photos"), reportController.generateReport)
+}, uploadFields, reportController.generateReport)
 
 module.exports = router

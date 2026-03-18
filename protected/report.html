@@ -62,6 +62,18 @@ nav{ display:flex; align-items:center; gap:6px; }
 }
 .sec-label:first-child{ margin-top:0; }
 
+/* Page badge */
+.page-badge{
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(37,99,235,0.07);
+  border:1px solid rgba(37,99,235,0.18);
+  border-radius:100px;
+  padding:3px 12px;
+  font-size:10px; font-weight:700; color:var(--sky);
+  letter-spacing:1px; text-transform:uppercase;
+  margin-bottom:10px;
+}
+
 /* FIELDS */
 .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .grid-3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
@@ -83,9 +95,10 @@ nav{ display:flex; align-items:center; gap:6px; }
   color:var(--ink); margin-right:10px;
 }
 
-/* EXTRA ROWS */
-.extra-row{ display:flex; gap:10px; margin-top:10px; }
-.extra-row .fi{ flex:1; }
+/* DYNAMIC ROWS */
+.person-list{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.person-row{ display:flex; gap:10px; align-items:center; }
+.person-row .fi{ flex:1; }
 .btn-remove{
   width:36px; height:36px; flex-shrink:0;
   background:rgba(239,68,68,0.08);
@@ -93,7 +106,7 @@ nav{ display:flex; align-items:center; gap:6px; }
   border-radius:9px; cursor:pointer;
   color:var(--danger); font-size:18px; font-weight:700;
   display:flex; align-items:center; justify-content:center;
-  transition:all 0.15s; align-self:center;
+  transition:all 0.15s;
 }
 .btn-remove:hover{ background:rgba(239,68,68,0.15); }
 .btn-add-row{
@@ -107,6 +120,10 @@ nav{ display:flex; align-items:center; gap:6px; }
   transition:all 0.2s;
 }
 .btn-add-row:hover{ background:#eef2ff; border-color:#a5b4fc; color:var(--sky); }
+
+/* EXTRA ROWS (screening/treatment) */
+.extra-row{ display:flex; gap:10px; margin-top:10px; }
+.extra-row .fi{ flex:1; }
 
 /* SUBMIT */
 .submit-btn{
@@ -175,35 +192,72 @@ footer{
 
   <div class="form-card">
 
-    <div class="sec-label">🏥 Camp Details</div>
+    <!-- ═══ PAGE 1 & 2 SHARED DETAILS ═══ -->
+    <div class="page-badge">📄 Pages 1 &amp; 2 — Camp Circular &amp; Attendance Sheet</div>
+
+    <div class="sec-label">🏥 College &amp; Department</div>
     <div class="grid-2">
       <input class="fi" id="collegeName" placeholder="College Name">
       <input class="fi" id="departmentName" placeholder="Department Name">
-      <input class="fi" id="campLocation" placeholder="Camp Location">
-      <input class="fi" id="associationName" placeholder="Association Name">
-      <input class="fi" id="projectName" placeholder="Project Name">
-      <input class="fi" id="reportDateShort" placeholder="Short Date (e.g. 10/03/2026)">
+      <input class="fi" id="collegeAddress" placeholder="College Address (e.g. Ultra Nagar, Madurai – 625 104)">
     </div>
-    <div style="margin-top:12px">
+
+    <div class="sec-label">🪪 Reference &amp; Dates</div>
+    <div class="grid-3">
+      <input class="fi" id="refNo" placeholder="Ref No (e.g. UT: BDSC/PHD/CAMP:06/2025)">
+      <input class="fi" id="reportDateShort" placeholder="Short Date (e.g. 10/03/2026)">
       <input class="fi" id="reportDateLong" placeholder="Long Date (e.g. 10th March 2026)">
     </div>
 
-    <div class="sec-label">⏱️ Timings &amp; Team</div>
+    <div class="sec-label">📍 Camp Location &amp; Timings</div>
     <div class="grid-3">
-      <input class="fi" id="startTime" placeholder="Start Time">
-      <input class="fi" id="endTime" placeholder="End Time">
+      <input class="fi" id="campLocation" placeholder="Camp Location">
+      <input class="fi" id="startTime" placeholder="Start Time (e.g. 8:30 AM)">
+      <input class="fi" id="endTime" placeholder="End Time (e.g. 4:30 PM)">
+      <input class="fi" id="busTime" placeholder="Bus Departure Time (e.g. 8:30 AM)">
+    </div>
+
+    <!-- STAFF LIST -->
+    <div class="sec-label">👨‍⚕️ Staff Members</div>
+    <div class="person-list" id="staffList"></div>
+    <button class="btn-add-row" onclick="addPerson('staffList', 'Staff Name (e.g. Dr Subhasini, M.D.S)')">+ Add Staff</button>
+
+    <!-- POSTGRADUATE LIST -->
+    <div class="sec-label">🎓 Postgraduate Members</div>
+    <div class="person-list" id="pgList"></div>
+    <button class="btn-add-row" onclick="addPerson('pgList', 'PG Name (e.g. Dr. Mouriyan. P)')">+ Add Postgraduate</button>
+
+    <!-- INTERN LIST -->
+    <div class="sec-label">🩺 Interns</div>
+    <div class="person-list" id="internList"></div>
+    <button class="btn-add-row" onclick="addPerson('internList', 'Intern Name (e.g. Dr. Premalatha)')">+ Add Intern</button>
+
+    <!-- LOGO UPLOAD -->
+    <div class="sec-label">🖼️ College Logo <span style="font-size:10px;color:#94a3b8;font-weight:400;text-transform:none">(used on attendance page — left &amp; right sides)</span></div>
+    <input class="fi" type="file" id="logo" accept="image/*">
+
+    <!-- ═══ PAGE 3 — REPORT SUMMARY ═══ -->
+    <div class="page-badge" style="margin-top:28px">📄 Page 3 — Camp Report Summary</div>
+
+    <div class="sec-label">🤝 Associations</div>
+    <div class="grid-2">
+      <input class="fi" id="associationName" placeholder="Association Name">
+      <input class="fi" id="projectName" placeholder="Project Name">
+    </div>
+
+    <div class="sec-label">🧑‍⚕️ Team Counts &amp; Patient Summary</div>
+    <div class="grid-3">
       <input class="fi" id="staffCount" placeholder="Staff Count">
       <input class="fi" id="postgraduateCount" placeholder="Postgraduate Count">
       <input class="fi" id="internCount" placeholder="Intern Count">
-    </div>
-
-    <div class="sec-label">🧑‍⚕️ Patient Summary</div>
-    <div class="grid-3">
       <input class="fi" id="totalPatients" placeholder="Total Patients">
       <input class="fi" id="treatmentCount" placeholder="Treatment Count">
       <input class="fi" id="maleCount" placeholder="Male Count">
       <input class="fi" id="femaleCount" placeholder="Female Count">
     </div>
+
+    <!-- ═══ PAGES 5-6 — STATISTICS ═══ -->
+    <div class="page-badge" style="margin-top:28px">📊 Pages 5 &amp; 6 — Statistics</div>
 
     <div class="sec-label">🔬 Screening Statistics</div>
     <div class="grid-3">
@@ -219,7 +273,8 @@ footer{
     <div id="extraTreatment"></div>
     <button class="btn-add-row" onclick="addTreatment()">+ Add Treatment</button>
 
-    <div class="sec-label">📷 Upload Photos</div>
+    <!-- ═══ PHOTOS ═══ -->
+    <div class="sec-label">📷 Upload Camp Photos <span style="font-size:10px;color:#94a3b8;font-weight:400;text-transform:none">(Page 4)</span></div>
     <input class="fi" type="file" id="photos" multiple accept="image/*">
 
     <button class="submit-btn" onclick="generate()" id="generateBtn">⚡ Generate Report</button>
@@ -245,6 +300,16 @@ async function doLogout() {
   window.location.replace(GITHUB + "/userlogin.html");
 }
 
+// ── Dynamic person rows (staff / pg / intern) ─────────────────────────────────
+function addPerson(listId, placeholder) {
+  const container = document.getElementById(listId);
+  const div = document.createElement("div");
+  div.className = "person-row";
+  div.innerHTML = `<input class="fi" placeholder="${placeholder}"><button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
+  container.appendChild(div);
+}
+
+// ── Extra screening / treatment rows ─────────────────────────────────────────
 function addScreening() {
   const div = document.createElement("div");
   div.className = "extra-row";
@@ -259,6 +324,13 @@ function addTreatment() {
   document.getElementById("extraTreatment").appendChild(div);
 }
 
+// ── Collect person list values ────────────────────────────────────────────────
+function collectPersonList(listId) {
+  const inputs = document.querySelectorAll(`#${listId} .person-row input`);
+  return Array.from(inputs).map(i => i.value.trim()).filter(Boolean);
+}
+
+// ── Generate ──────────────────────────────────────────────────────────────────
 async function generate() {
   const btn = document.getElementById("generateBtn");
   const msg = document.getElementById("statusMsg");
@@ -268,12 +340,22 @@ async function generate() {
   const get = (id) => document.getElementById(id)?.value || "";
   const formData = new FormData();
 
-  ["collegeName","departmentName","campLocation","associationName","projectName",
-   "reportDateShort","reportDateLong","startTime","endTime","staffCount",
-   "postgraduateCount","internCount","totalPatients","treatmentCount",
-   "maleCount","femaleCount","dentalCaries","gingivitis","missing","scaling"]
-  .forEach(f => formData.append(f, get(f)));
+  // Basic fields
+  [
+    "collegeName","departmentName","collegeAddress","refNo",
+    "campLocation","associationName","projectName",
+    "reportDateShort","reportDateLong","busTime",
+    "startTime","endTime","staffCount",
+    "postgraduateCount","internCount","totalPatients","treatmentCount",
+    "maleCount","femaleCount","dentalCaries","gingivitis","missing","scaling"
+  ].forEach(f => formData.append(f, get(f)));
 
+  // Staff / PG / Intern lists as JSON
+  formData.append("staffList",  JSON.stringify(collectPersonList("staffList")));
+  formData.append("pgList",     JSON.stringify(collectPersonList("pgList")));
+  formData.append("internList", JSON.stringify(collectPersonList("internList")));
+
+  // Extra screening
   const extraScreening = [];
   document.querySelectorAll("#extraScreening .extra-row").forEach(row => {
     const inputs = row.querySelectorAll("input");
@@ -282,6 +364,7 @@ async function generate() {
   });
   if (extraScreening.length) formData.append("extraScreening", JSON.stringify(extraScreening));
 
+  // Extra treatment
   const extraTreatment = [];
   document.querySelectorAll("#extraTreatment .extra-row").forEach(row => {
     const inputs = row.querySelectorAll("input");
@@ -290,6 +373,11 @@ async function generate() {
   });
   if (extraTreatment.length) formData.append("extraTreatment", JSON.stringify(extraTreatment));
 
+  // Logo (single file under field name "logo")
+  const logoFile = document.getElementById("logo").files[0];
+  if (logoFile) formData.append("logo", logoFile);
+
+  // Camp photos
   const photoFiles = document.getElementById("photos").files;
   for (let i = 0; i < photoFiles.length; i++) formData.append("photos", photoFiles[i]);
 
