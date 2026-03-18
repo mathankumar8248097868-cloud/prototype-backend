@@ -371,6 +371,12 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     // PAGE 3 — CAMP REPORT SUMMARY
     // ═══════════════════════════════════════════════════════════════════════════
+    children.push(makeLogoHeader([
+      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 20 },
+      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+    ]));
+    children.push(blank());
     children.push(heading(d.collegeName));
     children.push(heading(d.departmentName));
     children.push(heading(`Camp Report – ${d.campLocation}`));
@@ -393,6 +399,12 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     // PAGE 4 – PHOTOS  (two per row, spaced via a borderless 2-col table)
     // ═══════════════════════════════════════════════════════════════════════════
+    children.push(makeLogoHeader([
+      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 20 },
+      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+    ]));
+    children.push(blank());
     children.push(heading("Photos"));
     children.push(blank());
 
@@ -432,6 +444,12 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     // PAGE 5 – CAMP STATISTICS
     // ═══════════════════════════════════════════════════════════════════════════
+    children.push(makeLogoHeader([
+      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 20 },
+      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+    ]));
+    children.push(blank());
     const cW = 2800;
     const campTable = new Table({
       alignment: AlignmentType.CENTER,
@@ -456,10 +474,15 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     // PAGE 6 – SCREENING STATISTICS
     // ═══════════════════════════════════════════════════════════════════════════
+    children.push(makeLogoHeader([
+      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 20 },
+      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+    ]));
+    children.push(blank());
     let screeningRows = [
       ["Dental Caries", d.dentalCaries],
       ["Gingivitis",    d.gingivitis],
-      ["Missing",       d.missing],
     ];
     if (d.extraScreening)
       JSON.parse(d.extraScreening).forEach((item) => screeningRows.push([item.name, item.value]));
@@ -490,6 +513,12 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     // PAGE 7 – TREATMENT STATISTICS
     // ═══════════════════════════════════════════════════════════════════════════
+    children.push(makeLogoHeader([
+      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 20 },
+      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+    ]));
+    children.push(blank());
     let treatmentRows = [["Scaling", d.scaling || 0]];
     if (d.extraTreatment)
       JSON.parse(d.extraTreatment).forEach((item) => treatmentRows.push([item.name, item.value]));

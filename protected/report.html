@@ -258,10 +258,9 @@ footer{
     <div class="page-badge" style="margin-top:28px">📊 Pages 5 &amp; 6 — Statistics</div>
 
     <div class="sec-label">🔬 Screening Statistics</div>
-    <div class="grid-3">
+    <div class="grid-2">
       <input class="fi" id="dentalCaries" placeholder="Dental Caries">
       <input class="fi" id="gingivitis" placeholder="Gingivitis">
-      <input class="fi" id="missing" placeholder="Missing">
     </div>
     <div id="extraScreening"></div>
     <button class="btn-add-row" onclick="addScreening()">+ Add Diagnosis</button>
@@ -307,6 +306,14 @@ function addPerson(listId, placeholder) {
   container.appendChild(div);
 }
 
+// Pre-populate one default empty row for each person list
+function initDefaultRows() {
+  addPerson("staffList",  "Staff Name (e.g. Dr Subhasini, M.D.S)");
+  addPerson("pgList",     "PG Name (e.g. Dr. Mouriyan. P)");
+  addPerson("internList", "Intern Name (e.g. Dr. Premalatha)");
+}
+document.addEventListener("DOMContentLoaded", initDefaultRows);
+
 // ── Extra screening / treatment rows ─────────────────────────────────────────
 function addScreening() {
   const div = document.createElement("div");
@@ -345,7 +352,7 @@ async function generate() {
     "reportDateShort","reportDateLong","busTime",
     "startTime","endTime","staffCount",
     "postgraduateCount","internCount","totalPatients","treatmentCount",
-    "maleCount","femaleCount","dentalCaries","gingivitis","missing","scaling"
+    "maleCount","femaleCount","dentalCaries","gingivitis","scaling"
   ].forEach(f => formData.append(f, get(f)));
 
   // Staff / PG / Intern lists as JSON
