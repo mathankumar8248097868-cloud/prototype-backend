@@ -22,10 +22,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
-// Accept: logo (single) + photos (multiple)
+// Accept: logoLeft (single) + logoRight (single) + photos (multiple)
 const uploadFields = upload.fields([
-  { name: "logo", maxCount: 1 },
-  { name: "photos", maxCount: 30 },
+  { name: "logoLeft",  maxCount: 1 },
+  { name: "logoRight", maxCount: 1 },
+  { name: "photos",    maxCount: 30 },
 ])
 
 // ── Protect route — only logged-in users can generate reports ─────────────────
