@@ -394,7 +394,7 @@ exports.generateReport = async (req, res) => {
       { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
     ]));
     children.push(blank());
-    children.push(heading(`Camp Report – ${d.campLocation}`));
+    children.push(heading(d.campLocation));
     children.push(heading(`Date: ${d.reportDateShort}`));
     children.push(blank());
 
