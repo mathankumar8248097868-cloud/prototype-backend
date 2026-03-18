@@ -259,17 +259,25 @@ exports.generateReport = async (req, res) => {
         })],
       });
 
+      // Full page width = 12240 DXA, left+right margin = 1440 each
+      // To reach true corners: table width = 12240, indent = -1440 (left margin)
+      const FULL_W   = 12240;
+      const MARGIN   = 1440;
+      const LOGO_COL = 1440; // logo column wide enough for 95px logo
+      const MID_COL  = FULL_W - LOGO_COL * 2; // 9360
+
       return new Table({
-        alignment: AlignmentType.CENTER,
-        width: { size: 9360, type: WidthType.DXA },
-        columnWidths: [1200, 6960, 1200],
+        alignment: AlignmentType.LEFT,
+        width: { size: FULL_W, type: WidthType.DXA },
+        indent: { size: -MARGIN, type: WidthType.DXA }, // break out of left margin
+        columnWidths: [LOGO_COL, MID_COL, LOGO_COL],
         borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
         rows: [new TableRow({
           children: [
             leftCornerCell,
             new TableCell({
               borders: noBorders,
-              width: { size: 6960, type: WidthType.DXA },
+              width: { size: MID_COL, type: WidthType.DXA },
               verticalAlign: VerticalAlign.CENTER,
               margins: { top: 0, bottom: 0, left: 0, right: 0 },
               children: centreChildren,
