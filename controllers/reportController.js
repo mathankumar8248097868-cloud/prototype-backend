@@ -215,20 +215,6 @@ exports.generateReport = async (req, res) => {
     const internList = d.internList ? JSON.parse(d.internList) : [];
 
     // ── Logo header table (left logo | centre text | right logo) ─────────────
-    const logoCell = (buf, w) =>
-      new TableCell({
-        borders: noBorders,
-        width: { size: w, type: WidthType.DXA },
-        verticalAlign: VerticalAlign.CENTER,
-        margins: { top: 0, bottom: 0, left: 0, right: 0 },
-        children: [new Paragraph({
-          alignment: AlignmentType.CENTER,
-          children: buf
-            ? [new ImageRun({ data: buf, transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
-            : [new TextRun("")],
-        })],
-      });
-
     const makeLogoHeader = (lines) => {
       const centreChildren = lines.map((line) =>
         new Paragraph({
@@ -244,22 +230,56 @@ exports.generateReport = async (req, res) => {
         })
       );
 
+      // Page: 12240 wide, 1440 margins each side → content = 9360
+      // Table spans full page width via negative indent, logos hit true corners
+      const FULL_W   = 12240;
+      const MARGIN   = 1440;
+      const LOGO_COL = 1440;
+      const MID_COL  = FULL_W - LOGO_COL * 2; // 9360
+
+      const leftCornerCell = new TableCell({
+        borders: noBorders,
+        width: { size: LOGO_COL, type: WidthType.DXA },
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        children: [new Paragraph({
+          alignment: AlignmentType.LEFT,
+          children: logoLeftBuf
+            ? [new ImageRun({ data: logoLeftBuf,  transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
+            : [new TextRun("")],
+        })],
+      });
+
+      const rightCornerCell = new TableCell({
+        borders: noBorders,
+        width: { size: LOGO_COL, type: WidthType.DXA },
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        children: [new Paragraph({
+          alignment: AlignmentType.RIGHT,
+          children: logoRightBuf
+            ? [new ImageRun({ data: logoRightBuf, transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
+            : [new TextRun("")],
+        })],
+      });
+
       return new Table({
-        alignment: AlignmentType.CENTER,
-        width: { size: 9360, type: WidthType.DXA },
-        columnWidths: [1440, 6480, 1440],
+        alignment: AlignmentType.LEFT,
+        width: { size: FULL_W, type: WidthType.DXA },
+        indent: { size: -MARGIN, type: WidthType.DXA }, // break out of left margin
+        columnWidths: [LOGO_COL, MID_COL, LOGO_COL],
         borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
         rows: [new TableRow({
           children: [
-            logoCell(logoLeftBuf,  1440),
+            leftCornerCell,
             new TableCell({
               borders: noBorders,
-              width: { size: 6480, type: WidthType.DXA },
+              width: { size: MID_COL, type: WidthType.DXA },
               verticalAlign: VerticalAlign.CENTER,
-              margins: { top: 0, bottom: 0, left: 60, right: 60 },
+              margins: { top: 0, bottom: 0, left: 0, right: 0 },
               children: centreChildren,
             }),
-            logoCell(logoRightBuf, 1440),
+            rightCornerCell,
           ],
         })],
       });
@@ -377,8 +397,6 @@ exports.generateReport = async (req, res) => {
       { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
     ]));
     children.push(blank());
-    children.push(heading(d.collegeName));
-    children.push(heading(d.departmentName));
     children.push(heading(`Camp Report – ${d.campLocation}`));
     children.push(heading(`Date: ${d.reportDateShort}`));
     children.push(blank());
