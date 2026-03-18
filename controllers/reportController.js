@@ -244,6 +244,34 @@ exports.generateReport = async (req, res) => {
         })
       );
 
+      // Left logo cell — flush to left corner
+      const leftCornerCell = new TableCell({
+        borders: noBorders,
+        width: { size: 1440, type: WidthType.DXA },
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        children: [new Paragraph({
+          alignment: AlignmentType.LEFT,
+          children: logoLeftBuf
+            ? [new ImageRun({ data: logoLeftBuf, transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
+            : [new TextRun("")],
+        })],
+      });
+
+      // Right logo cell — flush to right corner
+      const rightCornerCell = new TableCell({
+        borders: noBorders,
+        width: { size: 1440, type: WidthType.DXA },
+        verticalAlign: VerticalAlign.CENTER,
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        children: [new Paragraph({
+          alignment: AlignmentType.RIGHT,
+          children: logoRightBuf
+            ? [new ImageRun({ data: logoRightBuf, transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
+            : [new TextRun("")],
+        })],
+      });
+
       return new Table({
         alignment: AlignmentType.CENTER,
         width: { size: 9360, type: WidthType.DXA },
@@ -251,7 +279,7 @@ exports.generateReport = async (req, res) => {
         borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
         rows: [new TableRow({
           children: [
-            logoCell(logoLeftBuf,  1440),
+            leftCornerCell,
             new TableCell({
               borders: noBorders,
               width: { size: 6480, type: WidthType.DXA },
@@ -259,7 +287,7 @@ exports.generateReport = async (req, res) => {
               margins: { top: 0, bottom: 0, left: 60, right: 60 },
               children: centreChildren,
             }),
-            logoCell(logoRightBuf, 1440),
+            rightCornerCell,
           ],
         })],
       });
