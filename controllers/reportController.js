@@ -230,15 +230,20 @@ exports.generateReport = async (req, res) => {
         })
       );
 
-      // Logo cells — zero margins, zero padding, alignment pushes to outer edge
+      // Page: 12240 wide, 1440 margins each side → content = 9360
+      // Table spans full page width via negative indent, logos hit true corners
+      const FULL_W   = 12240;
+      const MARGIN   = 1440;
+      const LOGO_COL = 1440;
+      const MID_COL  = FULL_W - LOGO_COL * 2; // 9360
+
       const leftCornerCell = new TableCell({
         borders: noBorders,
-        width: { size: 1200, type: WidthType.DXA },
+        width: { size: LOGO_COL, type: WidthType.DXA },
         verticalAlign: VerticalAlign.CENTER,
         margins: { top: 0, bottom: 0, left: 0, right: 0 },
         children: [new Paragraph({
           alignment: AlignmentType.LEFT,
-          indent: { left: 0 },
           children: logoLeftBuf
             ? [new ImageRun({ data: logoLeftBuf,  transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
             : [new TextRun("")],
@@ -247,24 +252,16 @@ exports.generateReport = async (req, res) => {
 
       const rightCornerCell = new TableCell({
         borders: noBorders,
-        width: { size: 1200, type: WidthType.DXA },
+        width: { size: LOGO_COL, type: WidthType.DXA },
         verticalAlign: VerticalAlign.CENTER,
         margins: { top: 0, bottom: 0, left: 0, right: 0 },
         children: [new Paragraph({
           alignment: AlignmentType.RIGHT,
-          indent: { right: 0 },
           children: logoRightBuf
             ? [new ImageRun({ data: logoRightBuf, transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
             : [new TextRun("")],
         })],
       });
-
-      // Full page width = 12240 DXA, left+right margin = 1440 each
-      // To reach true corners: table width = 12240, indent = -1440 (left margin)
-      const FULL_W   = 12240;
-      const MARGIN   = 1440;
-      const LOGO_COL = 1440; // logo column wide enough for 95px logo
-      const MID_COL  = FULL_W - LOGO_COL * 2; // 9360
 
       return new Table({
         alignment: AlignmentType.LEFT,
