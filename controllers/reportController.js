@@ -133,7 +133,7 @@ exports.generateReport = async (req, res) => {
     // ── Read default logos from disk (graceful fallback if missing) ───────────
     const logoLeftBuf  = fs.existsSync(LOGO_LEFT_PATH)  ? fs.readFileSync(LOGO_LEFT_PATH)  : null;
     const logoRightBuf = fs.existsSync(LOGO_RIGHT_PATH) ? fs.readFileSync(LOGO_RIGHT_PATH) : null;
-    const LOGO_SIZE = 95; // px
+    const LOGO_SIZE = 120; // px — larger to match reference
 
     const children = [];
 
@@ -219,7 +219,7 @@ exports.generateReport = async (req, res) => {
       const centreChildren = lines.map((line) =>
         new Paragraph({
           alignment: AlignmentType.CENTER,
-          spacing: { line: 300 },
+          spacing: { line: 320 },
           children: [new TextRun({
             text: line.text || "",
             font: "Times New Roman",
@@ -231,9 +231,9 @@ exports.generateReport = async (req, res) => {
       );
 
       // Content width = 9360 DXA (page 12240 - margins 1440*2)
-      // Logo columns tight beside the centre text — matches screenshot layout
-      const LOGO_COL = 1100;
-      const MID_COL  = 9360 - LOGO_COL * 2; // 7160
+      // Logo columns sized for 120px logos
+      const LOGO_COL = 1400;
+      const MID_COL  = 9360 - LOGO_COL * 2; // 6560
 
       const leftLogoCell = new TableCell({
         borders: noBorders,
@@ -273,7 +273,7 @@ exports.generateReport = async (req, res) => {
               borders: noBorders,
               width: { size: MID_COL, type: WidthType.DXA },
               verticalAlign: VerticalAlign.CENTER,
-              margins: { top: 0, bottom: 0, left: 0, right: 0 },
+              margins: { top: 0, bottom: 0, left: 60, right: 60 },
               children: centreChildren,
             }),
             rightLogoCell,
@@ -360,9 +360,9 @@ exports.generateReport = async (req, res) => {
     // PAGE 2 — ATTENDANCE SHEET
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
-      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 20 },
-      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+      { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
 
@@ -389,9 +389,9 @@ exports.generateReport = async (req, res) => {
     // PAGE 3 — CAMP REPORT SUMMARY
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
-      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 20 },
-      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+      { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
     children.push(heading(d.campLocation));
@@ -415,9 +415,9 @@ exports.generateReport = async (req, res) => {
     // PAGE 4 – PHOTOS  (two per row, spaced via a borderless 2-col table)
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
-      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 20 },
-      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+      { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
     children.push(heading("Photos"));
@@ -460,9 +460,9 @@ exports.generateReport = async (req, res) => {
     // PAGE 5 – CAMP STATISTICS
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
-      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 20 },
-      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+      { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
     const cW = 2800;
@@ -490,9 +490,9 @@ exports.generateReport = async (req, res) => {
     // PAGE 6 – SCREENING STATISTICS
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
-      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 20 },
-      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+      { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
     let screeningRows = [
@@ -529,9 +529,9 @@ exports.generateReport = async (req, res) => {
     // PAGE 7 – TREATMENT STATISTICS
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
-      { text: (d.collegeName || "").toUpperCase(),    size: 26, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 20 },
-      { text: (d.departmentName || "").toUpperCase(), size: 22, bold: true, underline: true },
+      { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
+      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
     let treatmentRows = [["Scaling", d.scaling || 0]];
