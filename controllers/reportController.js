@@ -215,20 +215,6 @@ exports.generateReport = async (req, res) => {
     const internList = d.internList ? JSON.parse(d.internList) : [];
 
     // ── Logo header table (left logo | centre text | right logo) ─────────────
-    const logoCell = (buf, w) =>
-      new TableCell({
-        borders: noBorders,
-        width: { size: w, type: WidthType.DXA },
-        verticalAlign: VerticalAlign.CENTER,
-        margins: { top: 0, bottom: 0, left: 0, right: 0 },
-        children: [new Paragraph({
-          alignment: AlignmentType.CENTER,
-          children: buf
-            ? [new ImageRun({ data: buf, transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
-            : [new TextRun("")],
-        })],
-      });
-
     const makeLogoHeader = (lines) => {
       const centreChildren = lines.map((line) =>
         new Paragraph({
@@ -244,28 +230,29 @@ exports.generateReport = async (req, res) => {
         })
       );
 
-      // Left logo cell — flush to left corner
+      // Logo cells — zero margins, zero padding, alignment pushes to outer edge
       const leftCornerCell = new TableCell({
         borders: noBorders,
-        width: { size: 1440, type: WidthType.DXA },
+        width: { size: 1200, type: WidthType.DXA },
         verticalAlign: VerticalAlign.CENTER,
         margins: { top: 0, bottom: 0, left: 0, right: 0 },
         children: [new Paragraph({
           alignment: AlignmentType.LEFT,
+          indent: { left: 0 },
           children: logoLeftBuf
-            ? [new ImageRun({ data: logoLeftBuf, transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
+            ? [new ImageRun({ data: logoLeftBuf,  transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
             : [new TextRun("")],
         })],
       });
 
-      // Right logo cell — flush to right corner
       const rightCornerCell = new TableCell({
         borders: noBorders,
-        width: { size: 1440, type: WidthType.DXA },
+        width: { size: 1200, type: WidthType.DXA },
         verticalAlign: VerticalAlign.CENTER,
         margins: { top: 0, bottom: 0, left: 0, right: 0 },
         children: [new Paragraph({
           alignment: AlignmentType.RIGHT,
+          indent: { right: 0 },
           children: logoRightBuf
             ? [new ImageRun({ data: logoRightBuf, transformation: { width: LOGO_SIZE, height: LOGO_SIZE }, type: "png" })]
             : [new TextRun("")],
@@ -275,16 +262,16 @@ exports.generateReport = async (req, res) => {
       return new Table({
         alignment: AlignmentType.CENTER,
         width: { size: 9360, type: WidthType.DXA },
-        columnWidths: [1440, 6480, 1440],
+        columnWidths: [1200, 6960, 1200],
         borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
         rows: [new TableRow({
           children: [
             leftCornerCell,
             new TableCell({
               borders: noBorders,
-              width: { size: 6480, type: WidthType.DXA },
+              width: { size: 6960, type: WidthType.DXA },
               verticalAlign: VerticalAlign.CENTER,
-              margins: { top: 0, bottom: 0, left: 60, right: 60 },
+              margins: { top: 0, bottom: 0, left: 0, right: 0 },
               children: centreChildren,
             }),
             rightCornerCell,
