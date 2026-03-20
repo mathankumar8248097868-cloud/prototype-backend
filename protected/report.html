@@ -195,13 +195,6 @@ footer{
     <!-- ═══ PAGE 1 & 2 SHARED DETAILS ═══ -->
     <div class="page-badge">📄 Pages 1 &amp; 2 — Camp Circular &amp; Attendance Sheet</div>
 
-    <div class="sec-label">🏥 College &amp; Department</div>
-    <div class="grid-2">
-      <input class="fi" id="collegeName" placeholder="College Name">
-      <input class="fi" id="departmentName" placeholder="Department Name">
-      <input class="fi" id="collegeAddress" placeholder="College Address (e.g. Ultra Nagar, Madurai – 625 104)">
-    </div>
-
     <div class="sec-label">🪪 Reference &amp; Dates</div>
     <div class="grid-3">
       <input class="fi" id="refNo" placeholder="Ref No (e.g. UT: BDSC/PHD/CAMP:06/2025)">
@@ -347,7 +340,7 @@ async function generate() {
 
   // Basic fields
   [
-    "collegeName","departmentName","collegeAddress","refNo",
+    "refNo",
     "campLocation","associationName","projectName",
     "reportDateShort","reportDateLong","busTime",
     "startTime","endTime","staffCount",
