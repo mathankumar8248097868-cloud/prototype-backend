@@ -203,23 +203,29 @@ function formatDate(raw) {
   return `${dd}-${mm}-${yyyy}`;
 }
 
-// ── Format time from PostgreSQL TIME (HH:MM:SS or HH:MM:SS.mmm) ──────────────
-// PostgreSQL TIME column returns values like "14:35:22" or "14:35:22.123456"
-// We just parse the HH:MM:SS directly — no Date() conversion to avoid UTC shift
+// ── Format time from PostgreSQL TIME (stored UTC → display IST = UTC+5:30) ────
 function formatTime(raw) {
   if (!raw) return "-";
   const str = String(raw);
 
-  // Extract HH:MM:SS from the start (handles "14:35:22", "14:35:22.123", etc.)
+  // Extract HH:MM:SS from "14:35:22" or "14:35:22.123456"
   const match = str.match(/^(\d{1,2}):(\d{2}):(\d{2})/);
   if (!match) return str;
 
-  let h   = parseInt(match[1], 10);
-  const m = match[2];
-  const s = match[3];
+  // Convert UTC → IST by adding 5h 30m
+  let totalSeconds = parseInt(match[1], 10) * 3600
+                   + parseInt(match[2], 10) * 60
+                   + parseInt(match[3], 10);
+  totalSeconds += (5 * 3600 + 30 * 60);   // +5:30
+  totalSeconds  = ((totalSeconds % 86400) + 86400) % 86400; // wrap 24h
+
+  let h = Math.floor(totalSeconds / 3600);
+  let m = Math.floor((totalSeconds % 3600) / 60);
+  let s = totalSeconds % 60;
+
   const ampm = h >= 12 ? "PM" : "AM";
   h = h % 12 || 12;
-  return `${String(h).padStart(2, "0")}:${m}:${s} ${ampm}`;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")} ${ampm}`;
 }
 
 async function doLogout() {
