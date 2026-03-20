@@ -130,6 +130,12 @@ exports.generateReport = async (req, res) => {
     const d      = req.body;
     const photos = req.files?.photos ?? [];
 
+    // ── Hardcoded college defaults ────────────────────────────────────────────
+    d.collegeName     = "BEST DENTAL SCIENCE COLLEGE AND HOSPITAL";
+    d.collegeAddress  = "Ultra Nagar, Madurai – Chennai Highway,";
+    d.collegeAddress2 = "Madurai – 625 104";
+    d.departmentName  = "DEPARTMENT OF PUBLIC HEALTH DENTISTRY";
+
     // ── Read default logos from disk (graceful fallback if missing) ───────────
     const logoLeftBuf  = fs.existsSync(LOGO_LEFT_PATH)  ? fs.readFileSync(LOGO_LEFT_PATH)  : null;
     const logoRightBuf = fs.existsSync(LOGO_RIGHT_PATH) ? fs.readFileSync(LOGO_RIGHT_PATH) : null;
@@ -361,7 +367,8 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
       { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: d.collegeAddress  || "",                size: 22, bold: true, underline: true },
+      { text: d.collegeAddress2 || "",                size: 22, bold: true, underline: true },
       { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
@@ -390,7 +397,8 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
       { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: d.collegeAddress  || "",                size: 22, bold: true, underline: true },
+      { text: d.collegeAddress2 || "",                size: 22, bold: true, underline: true },
       { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
@@ -416,7 +424,8 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
       { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: d.collegeAddress  || "",                size: 22, bold: true, underline: true },
+      { text: d.collegeAddress2 || "",                size: 22, bold: true, underline: true },
       { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
@@ -461,7 +470,8 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
       { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: d.collegeAddress  || "",                size: 22, bold: true, underline: true },
+      { text: d.collegeAddress2 || "",                size: 22, bold: true, underline: true },
       { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
@@ -491,7 +501,8 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
       { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: d.collegeAddress  || "",                size: 22, bold: true, underline: true },
+      { text: d.collegeAddress2 || "",                size: 22, bold: true, underline: true },
       { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
@@ -530,7 +541,8 @@ exports.generateReport = async (req, res) => {
     // ═══════════════════════════════════════════════════════════════════════════
     children.push(makeLogoHeader([
       { text: (d.collegeName || "").toUpperCase(),    size: 30, bold: true, underline: true },
-      { text: d.collegeAddress || "",                 size: 22, bold: true, underline: true },
+      { text: d.collegeAddress  || "",                size: 22, bold: true, underline: true },
+      { text: d.collegeAddress2 || "",                size: 22, bold: true, underline: true },
       { text: (d.departmentName || "").toUpperCase(), size: 26, bold: true, underline: true },
     ]));
     children.push(blank());
