@@ -181,7 +181,7 @@ footer{
 </footer>
 
 <script>
-const BASE = "https://prototype-backend-657r.onrender.com";
+const BASE   = "https://prototype-backend-657r.onrender.com";
 const GITHUB = "https://mathankumar8248097868-cloud.github.io/prototype-frontend";
 
 async function apiFetch(url, opts) {
@@ -193,29 +193,33 @@ async function apiFetch(url, opts) {
   return res;
 }
 
+// ── Format date from PostgreSQL DATE (YYYY-MM-DD or ISO string) ───────────────
 function formatDate(raw) {
   if (!raw) return "-";
-  const d = new Date(raw);
-  if (isNaN(d)) return raw;
-  const dd = String(d.getUTCDate()).padStart(2, "0");
-  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const yyyy = d.getUTCFullYear();
+  // PostgreSQL DATE comes as "2026-03-20T00:00:00.000Z" or "2026-03-20"
+  const str = String(raw).substring(0, 10); // "2026-03-20"
+  const [yyyy, mm, dd] = str.split("-");
+  if (!yyyy || !mm || !dd) return raw;
   return `${dd}-${mm}-${yyyy}`;
 }
 
+// ── Format time from PostgreSQL TIME (HH:MM:SS or HH:MM:SS.mmm) ──────────────
+// PostgreSQL TIME column returns values like "14:35:22" or "14:35:22.123456"
+// We just parse the HH:MM:SS directly — no Date() conversion to avoid UTC shift
 function formatTime(raw) {
   if (!raw) return "-";
-  const parts = String(raw).split(":");
-  if (parts.length >= 2) {
-    const hh = parts[0].padStart(2, "0");
-    const min = parts[1].padStart(2, "0");
-    const secRaw = parts[2] ? parts[2].split(".")[0].padStart(2, "0") : "00";
-    const h = parseInt(hh);
-    const ampm = h >= 12 ? "PM" : "AM";
-    const h12 = String(h % 12 || 12).padStart(2, "0");
-    return `${h12}:${min}:${secRaw} ${ampm}`;
-  }
-  return raw;
+  const str = String(raw);
+
+  // Extract HH:MM:SS from the start (handles "14:35:22", "14:35:22.123", etc.)
+  const match = str.match(/^(\d{1,2}):(\d{2}):(\d{2})/);
+  if (!match) return str;
+
+  let h   = parseInt(match[1], 10);
+  const m = match[2];
+  const s = match[3];
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${String(h).padStart(2, "0")}:${m}:${s} ${ampm}`;
 }
 
 async function doLogout() {
@@ -224,9 +228,9 @@ async function doLogout() {
 }
 
 async function loadUsers() {
-  const res = await apiFetch("/api/admin/users");
+  const res   = await apiFetch("/api/admin/users");
   const users = await res.json();
-  const t = document.getElementById("userTable");
+  const t     = document.getElementById("userTable");
   if (!users.length) { t.innerHTML = '<tr class="empty-row"><td colspan="4">No users found.</td></tr>'; return; }
   t.innerHTML = "";
   users.forEach((u, i) => {
@@ -235,7 +239,7 @@ async function loadUsers() {
       <td><span class="badge-user">${u.username}</span></td>
       <td>${u.password}</td>
       <td>
-        <button class="btn-sm btn-edit" onclick="editUser(${u.id})">Edit</button>
+        <button class="btn-sm btn-edit"   onclick="editUser(${u.id})">Edit</button>
         <button class="btn-sm btn-delete" onclick="delUser(${u.id})">Delete</button>
       </td></tr>`;
   });
@@ -245,7 +249,7 @@ async function addUser() {
   const username = document.getElementById("newUser").value.trim();
   const password = document.getElementById("newPass").value.trim();
   if (!username || !password) { alert("Please fill both fields"); return; }
-  const res = await apiFetch("/api/admin/adduser", {
+  const res  = await apiFetch("/api/admin/adduser", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password })
   });
@@ -274,9 +278,9 @@ async function editUser(id) {
 }
 
 async function loadReports() {
-  const res = await apiFetch("/api/admin/reports");
+  const res     = await apiFetch("/api/admin/reports");
   const reports = await res.json();
-  const t = document.getElementById("reportTable");
+  const t       = document.getElementById("reportTable");
   if (!reports.length) { t.innerHTML = '<tr class="empty-row"><td colspan="7">No reports found.</td></tr>'; return; }
   t.innerHTML = "";
   reports.forEach((r, i) => {
@@ -287,7 +291,7 @@ async function loadReports() {
       <td>${formatDate(r.created_date)}</td>
       <td>${formatTime(r.created_time)}</td>
       <td><button class="btn-sm btn-download" onclick="dlReport('${r.filename}')">⬇ Download</button></td>
-      <td><button class="btn-sm btn-delete" onclick="delReport('${r.filename}')">Delete</button></td>
+      <td><button class="btn-sm btn-delete"   onclick="delReport('${r.filename}')">Delete</button></td>
     </tr>`;
   });
 }
@@ -296,8 +300,9 @@ async function dlReport(filename) {
   const res = await apiFetch("/api/admin/reports/download?filename=" + encodeURIComponent(filename));
   if (!res.ok) { alert("Download failed"); return; }
   const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a"); a.href = url; a.download = filename;
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
 }
