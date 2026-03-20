@@ -245,7 +245,7 @@ exports.generateReport = async (req, res) => {
         borders: noBorders,
         width: { size: LOGO_COL, type: WidthType.DXA },
         verticalAlign: VerticalAlign.CENTER,
-        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        margins: { top: 0, bottom: 0, left: 0, right: 200 },
         children: [new Paragraph({
           alignment: AlignmentType.LEFT,
           children: logoLeftBuf
@@ -258,7 +258,7 @@ exports.generateReport = async (req, res) => {
         borders: noBorders,
         width: { size: LOGO_COL, type: WidthType.DXA },
         verticalAlign: VerticalAlign.CENTER,
-        margins: { top: 0, bottom: 0, left: 0, right: 0 },
+        margins: { top: 0, bottom: 0, left: 200, right: 0 },
         children: [new Paragraph({
           alignment: AlignmentType.RIGHT,
           children: logoRightBuf
